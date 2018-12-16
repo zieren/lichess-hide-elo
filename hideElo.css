@@ -1,0 +1,31 @@
+/* TODO: Clean this up. */
+
+/* Ingame box on the right: rating */
+body.no_hide_elo .username rating,
+/* Ingame box on the right: rating change */
+body.no_hide_elo .username .rp
+{
+	visibility: visible;
+}
+
+/* Tooltip over player name */
+body.no_hide_elo #powerTip .ratings
+{
+	visibility: visible;
+}
+
+/* Elo change in left side box */
+body.no_hide_elo .side_box .players .player .rp
+{
+	visibility: visible;
+}
+
+body.no_hide_elo .side_box .players .player a.user_link
+{
+	visibility: visible;
+}
+
+.side_box .players .player a.user_link.elo_hidden
+{
+	visibility: visible;
+}
