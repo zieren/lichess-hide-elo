@@ -51,7 +51,6 @@ var hideRatingsInLobbyBox = function(node) {
         td.hiddenElo = td.textContent;
         td.innerText = "";
       } else {
-        console.log(td);
         if (td.hiddenElo !== undefined) {
           td.innerText = td.hiddenElo;
         }
