@@ -25,31 +25,27 @@
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
 
-var enabled = true;  // XXX Read from storage.
-browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
+// Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
+// Start out enabled to avoid flashing ratings.
+var enabled = true;
 
-var processMessage = function(message) {
+// Process clicks on the icon, sent from the background script.
+browser.runtime.onMessage.addListener(message => {
   if (message.operation == 'iconClicked') {
     enabled = !enabled;
-    updateObservingState();
-    processIngameLeftSidebox();
-    setStyles();
-    browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
   }
-};
-browser.runtime.onMessage.addListener(processMessage);
+  onEnabledStateChange();  // XXX why listen manually?
+});
 
-// TODO: Consider splitting this up for granularity.
-
-/* Recursively search the specified subtree for TR elements and (un)hide ratings in them. */
-var hideRatingsInLobbyBox = function(node) {
+// Recursively search the specified subtree for TR elements and (un)hide ratings in them.
+function hideRatingsInLobbyBox(node) {
   if (node.tagName == 'TR' && node.children.length >= 3) {
     var td = node.children[2];
     if (// This is really just a hack to skip the first row (which contains headings):
         ratingRE.test(td.textContent) || td.hiddenElo !== undefined) {
       if (enabled) {
         td.hiddenElo = td.textContent;
-        td.innerText = "";
+        td.innerText = '';
       } else {
         if (td.hiddenElo !== undefined) {
           td.innerText = td.hiddenElo;
@@ -61,9 +57,9 @@ var hideRatingsInLobbyBox = function(node) {
       hideRatingsInLobbyBox(childNode);
     }
   }
-};
+}
 
-var processAddedNodes = function(mutationsList, observer) {
+function processAddedNodes(mutationsList, observer) {
   for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
     for (var node of mutation.addedNodes) {
@@ -77,27 +73,15 @@ var processAddedNodes = function(mutationsList, observer) {
       }
     }
   }
-};
+}
 
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
 var observer = new MutationObserver(processAddedNodes);
-var updateObservingState = function() {
-  if (enabled) {
-    observer.observe(document, { childList: true, subtree: true });
-  } else {
-    observer.disconnect();
-  }
-  var lobbyBox = document.querySelectorAll('div.lobby_box');
-  if (lobbyBox.length == 1) {
-    hideRatingsInLobbyBox(lobbyBox[0]);
-  }
-};
-updateObservingState();
 
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
-var processIngameLeftSidebox = function() {
+function processIngameLeftSidebox() {
   var players = document.querySelectorAll('.side_box .players .player a.user_link');
   for (let player of players) {
     if (enabled) {
@@ -113,13 +97,36 @@ var processIngameLeftSidebox = function() {
       }
     }
   }
-};
-processIngameLeftSidebox();
+}
 
-var setStyles = function() {
+function setStyles() {
   if (enabled) {
     document.body.classList.remove('no_hide_elo');
   } else {
     document.body.classList.add('no_hide_elo');
   }
-};
+}
+
+function configureObserverAndProcessLobbyBox() {
+  if (enabled) {
+    observer.observe(document, { childList: true, subtree: true });
+  } else {
+    observer.disconnect();
+  }
+  var lobbyBox = document.querySelector('div.lobby_box');
+  if (lobbyBox) {
+    hideRatingsInLobbyBox(lobbyBox);
+  }
+}
+
+function onEnabledStateChange() {
+  configureObserverAndProcessLobbyBox();
+  processIngameLeftSidebox();
+  setStyles();
+  browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
+}
+
+browser.storage.sync.get('defaultEnabled').then(result => {
+  enabled = result.defaultEnabled;  // XXX handle first run
+  onEnabledStateChange();
+});

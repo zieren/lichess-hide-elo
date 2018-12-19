@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Lichess hide Elo",
-  "version": "0.1",
+  "version": "0.0.1",
   "description": "Hides Elo ratings on lichess.org",
   "icons": {
     "16": "icons/icon-on.svg",
@@ -32,5 +32,14 @@
   ],
   "background": {
     "scripts": ["background.js"]
-	}
+	},
+  "options_ui": {
+    "page": "options.html"
+  },
+  "permissions": ["storage"],
+  "applications": {
+    "gecko": {
+      "id": "lichess.hide.elo@zieren.de"
+    }
+  }
 }
