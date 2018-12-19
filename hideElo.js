@@ -49,7 +49,7 @@ var hideRatingsInLobbyBox = function(node) {
         ratingRE.test(td.textContent) || td.hiddenElo !== undefined) {
       if (enabled) {
         td.hiddenElo = td.textContent;
-        td.innerText = '';
+        td.innerText = "";
       } else {
         console.log(td);
         if (td.hiddenElo !== undefined) {
