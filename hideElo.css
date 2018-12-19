@@ -1,4 +1,7 @@
-/* Hide ratings everywhere *while* the page is loading. */
+/*
+ * Hide ratings everywhere. Using Lichess default styles so ratings don't flash
+ * *while* the page is loading.
+ */
 
 /* Ingame box on the right: rating */
 .username rating,
