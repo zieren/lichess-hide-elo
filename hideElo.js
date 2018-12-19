@@ -25,10 +25,6 @@
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
 
-// Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
-// Start out enabled to avoid flashing ratings.
-var enabled = true;
-
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
   if (message.operation == 'iconClicked') {
@@ -120,13 +116,22 @@ function configureObserverAndProcessLobbyBox() {
 }
 
 function onEnabledStateChange() {
+  sessionStorage.setItem('enabled', enabled);
   configureObserverAndProcessLobbyBox();
   processIngameLeftSidebox();
   setStyles();
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-browser.storage.sync.get('defaultEnabled').then(result => {
-  enabled = result.defaultEnabled;  // XXX handle first run
-  onEnabledStateChange();
-});
+//Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
+//Start out enabled to avoid flashing ratings.
+var enabled = sessionStorage.getItem('enabled');
+if (enabled === null) {
+  browser.storage.sync.get('defaultEnabled').then(result => {
+    enabled = result.defaultEnabled;  // XXX handle first run; is it undefined?
+    onEnabledStateChange();
+  });
+} else {
+  enabled = enabled === 'true';
+  onEnabledStateChange(); // XXX don't overwrite the data we just read...
+}
