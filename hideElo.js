@@ -25,6 +25,8 @@
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
 
+var hiddenElos = new WeakMap();
+
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
   if (message.operation == 'iconClicked') {
@@ -37,15 +39,19 @@ browser.runtime.onMessage.addListener(message => {
 function hideRatingsInLobbyBox(node) {
   if (node.tagName == 'TR' && node.children.length >= 3) {
     var td = node.children[2];
+    var hiddenElo = hiddenElos.get(td);
     if (// This is really just a hack to skip the first row (which contains headings):
-        ratingRE.test(td.textContent) || td.hiddenElo !== undefined) {
+        ratingRE.test(td.textContent) || hiddenElo !== undefined) {
+
+      // XXX We read the live value of enabled, but we may still be running in the
+      // listener that wants to hide.
       if (enabled) {
-        td.hiddenElo = td.textContent;
-        td.innerText = '';
-      } else {
-        if (td.hiddenElo !== undefined) {
-          td.innerText = td.hiddenElo;
-        }
+        hiddenElos.set(td, td.textContent);
+        // XXX td.innerText = '';
+        td.style.visibility = 'hidden';
+      } else if (hiddenElo !== undefined) {
+        // XXX td.innerText = hiddenElo;
+        td.style.visibility = 'visible';
       }
     }
   } else if (node.children) {
@@ -55,7 +61,9 @@ function hideRatingsInLobbyBox(node) {
   }
 }
 
+var processing = false;
 function processAddedNodes(mutationsList, observer) {
+  processing = true;
   for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
     for (var node of mutation.addedNodes) {
@@ -69,6 +77,7 @@ function processAddedNodes(mutationsList, observer) {
       }
     }
   }
+  processing = false;
 }
 
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
@@ -84,12 +93,13 @@ function processIngameLeftSidebox() {
       var match = ratingParenthesizedRE.exec(player.firstChild.data);
       if (match) {
         player.firstChild.data = match[1];
-        player.firstChild.hiddenElo = match[2];
+        hiddenElos.set(player, match[2]);
         player.classList.add('elo_hidden');
       }
     } else {
-      if (player.firstChild.hiddenElo !== undefined) {
-        player.firstChild.data = player.firstChild.data + player.firstChild.hiddenElo;
+      var hiddenElo = hiddenElos.get(player);
+      if (hiddenElo !== undefined) {
+        player.firstChild.data = player.firstChild.data + hiddenElo;
       }
     }
   }
@@ -107,7 +117,11 @@ function configureObserverAndProcessLobbyBox() {
   if (enabled) {
     observer.observe(document, { childList: true, subtree: true });
   } else {
-    observer.disconnect();
+    observer.disconnect(); // XXX does the handler keep running and clash with the call below?
+    // alert('wait a bit for the observer');
+    while (processing == true) {
+      console.log('Waiting...');
+    }
   }
   var lobbyBox = document.querySelector('div.lobby_box');
   if (lobbyBox) {
@@ -116,6 +130,7 @@ function configureObserverAndProcessLobbyBox() {
 }
 
 function onEnabledStateChange() {
+//  console.log('---------------------- toggle');
   sessionStorage.setItem('enabled', enabled);
   configureObserverAndProcessLobbyBox();
   processIngameLeftSidebox();
