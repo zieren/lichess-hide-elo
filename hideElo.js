@@ -39,20 +39,9 @@ browser.runtime.onMessage.addListener(message => {
 function hideRatingsInLobbyBox(node) {
   if (node.tagName == 'TR' && node.children.length >= 3) {
     var td = node.children[2];
-    var hiddenElo = hiddenElos.get(td);
-    if (// This is really just a hack to skip the first row (which contains headings):
-        ratingRE.test(td.textContent) || hiddenElo !== undefined) {
-
-      // XXX We read the live value of enabled, but we may still be running in the
-      // listener that wants to hide.
-      if (enabled) {
-        hiddenElos.set(td, td.textContent);
-        // XXX td.innerText = '';
-        td.style.visibility = 'hidden';
-      } else if (hiddenElo !== undefined) {
-        // XXX td.innerText = hiddenElo;
-        td.style.visibility = 'visible';
-      }
+    // This is really just a hack to skip the first row (which contains headings):
+    if (ratingRE.test(td.textContent)) {
+      td.classList.add('hide_elo');
     }
   } else if (node.children) {
     for (let childNode of node.children) {
@@ -61,9 +50,7 @@ function hideRatingsInLobbyBox(node) {
   }
 }
 
-var processing = false;
 function processAddedNodes(mutationsList, observer) {
-  processing = true;
   for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
     for (var node of mutation.addedNodes) {
@@ -77,7 +64,6 @@ function processAddedNodes(mutationsList, observer) {
       }
     }
   }
-  processing = false;
 }
 
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
@@ -113,26 +99,9 @@ function setStyles() {
   }
 }
 
-function configureObserverAndProcessLobbyBox() {
-  if (enabled) {
-    observer.observe(document, { childList: true, subtree: true });
-  } else {
-    observer.disconnect(); // XXX does the handler keep running and clash with the call below?
-    // alert('wait a bit for the observer');
-    while (processing == true) {
-      console.log('Waiting...');
-    }
-  }
-  var lobbyBox = document.querySelector('div.lobby_box');
-  if (lobbyBox) {
-    hideRatingsInLobbyBox(lobbyBox);
-  }
-}
-
 function onEnabledStateChange() {
-//  console.log('---------------------- toggle');
   sessionStorage.setItem('enabled', enabled);
-  configureObserverAndProcessLobbyBox();
+  observer.observe(document, { childList: true, subtree: true });
   processIngameLeftSidebox();
   setStyles();
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});

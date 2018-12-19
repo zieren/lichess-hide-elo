@@ -10,7 +10,9 @@
 /* Tooltip over player name */
 #powerTip .ratings,
 /* Elo change in left side box */
-.side_box .players .player .rp
+.side_box .players .player .rp,
+/* Elo in seek list. */
+div.lobby_box td.hide_elo
 {
 	visibility: hidden;
 }
@@ -30,7 +32,13 @@ body.no_hide_elo .username .rp,
 body.no_hide_elo #powerTip .ratings,
 body.no_hide_elo .side_box .players .player .rp,
 body.no_hide_elo .side_box .players .player a.user_link,
-.side_box .players .player a.user_link.elo_hidden
+.side_box .players .player a.user_link.elo_hidden,
+body.no_hide_elo div.lobby_box td.hide_elo
 {
 	visibility: visible;
+}
+
+/* XXX */
+div.lobby_box table {
+  empty-cells: show;
 }
