@@ -14,10 +14,13 @@
  * So we initially hide a superset to make sure ratings don't even flash up briefly until the
  * script has finished running. The alternative would probably be to register the MutationObserver
  * at document_start, but that should be bad for performance.
+ *
+ * When modifying DOM elements, ratings are stored in a hiddenRating property so they can be
+ * restored when the extension is turned off.
  */
 
-// TODO: Consider performance optimization.
-// Idea: Don't hide ratings in other users' games. (Just "*/tv/*"?)
+// TODO: Consider performance optimization. E.g. only run required code depending on URL.
+// Idea: Don't hide ratings in other users' games.
 
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
@@ -37,16 +40,23 @@ var processMessage = function(message) {
 browser.runtime.onMessage.addListener(processMessage);
 
 // TODO: Consider splitting this up for granularity.
-// TODO: Consider options to not hide certain elements.
-// document.body.classList.add("no_hide_elo");
 
 /* Recursively search the specified subtree for TR elements and (un)hide ratings in them. */
 var hideRatingsInLobbyBox = function(node) {
-  if (node.tagName == 'TR'
-      && node.children.length >= 3
-      // This is really just a hack to skip the first row (which contains headings):
-      && ratingRE.test(node.children[2].textContent)) {
-    node.children[2].style.visibility = enabled ? 'hidden' : 'visible';
+  if (node.tagName == 'TR' && node.children.length >= 3) {
+    var td = node.children[2];
+    if (// This is really just a hack to skip the first row (which contains headings):
+        ratingRE.test(td.textContent) || td.hiddenElo !== undefined) {
+      if (enabled) {
+        td.hiddenElo = td.textContent;
+        td.innerText = '';
+      } else {
+        console.log(td);
+        if (td.hiddenElo !== undefined) {
+          td.innerText = td.hiddenElo;
+        }
+      }
+    }
   } else if (node.children) {
     for (let childNode of node.children) {
       hideRatingsInLobbyBox(childNode);
@@ -84,8 +94,6 @@ var updateObservingState = function() {
   }
 };
 updateObservingState();
-
-// TODO: Run the following on the ingame page only.
 
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
