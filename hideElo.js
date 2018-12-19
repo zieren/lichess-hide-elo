@@ -19,29 +19,42 @@
 // TODO: Consider performance optimization.
 // Idea: Don't hide ratings in other users' games. (Just "*/tv/*"?)
 
-ratingRE = /[123]?\d{3}\??/;
-ratingParenthesizedRE = /(.*)\([123]?\d{3}\??\)(.*)/;  // TODO: Whitespace before parentheses.
+var ratingRE = /[123]?\d{3}\??/;
+var ratingParenthesizedRE = /(.*)\([123]?\d{3}\??\)(.*)/;  // TODO: Whitespace before parentheses.
+
+var enabled = true;  // XXX Read from storage.
+browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
+
+var processMessage = function(message) {
+  if (message.operation == 'iconClicked') {
+    enabled = !enabled;
+    updateObservingState();
+    browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
+    // TODO: Update page to reflect new state: Would need to keep the ratings somewhere...
+  }
+}
+browser.runtime.onMessage.addListener(processMessage);
 
 // TODO: Consider splitting this up for granularity.
 // TODO: Consider options to not hide certain elements.
 // document.body.classList.add("no_hide_elo");
 
-/* Recursively search the specified subtree for TR elements and clear ratings in them. */
-function hideRatingsInLobbyBox(node) {
+/* Recursively search the specified subtree for TR elements and (un)hide ratings in them. */
+var hideRatingsInLobbyBox = function(node) {
   if (node.tagName == 'TR'
       && node.children.length >= 3
       // This is really just a hack to skip the first row (which contains headings):
-      && ratingRE.test(node.children[2].innerText)) {
-    node.children[2].innerText = "";  // "visibility: hidden" clashes with transparency
+      && ratingRE.test(node.children[2].textContent)) {
+    node.children[2].style.visibility = enabled ? 'hidden' : 'visible';
   } else if (node.children) {
-    for (var childNode of node.children) {
+    for (let childNode of node.children) {
       hideRatingsInLobbyBox(childNode);
     }
   }
 }
 
 var callback = function(mutationsList, observer) {
-  for (var mutation of mutationsList) {
+  for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
     for (var node of mutation.addedNodes) {
       // The entire box can be added at once, e.g. by clicking its tab...
@@ -58,7 +71,18 @@ var callback = function(mutationsList, observer) {
 
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
 var observer = new MutationObserver(callback);
-observer.observe(document, { childList: true, subtree: true });
+var updateObservingState = function() {
+  if (enabled) {
+    observer.observe(document, { childList: true, subtree: true });
+  } else {
+    observer.disconnect();
+  }
+  var lobbyBox = document.querySelectorAll('div.lobby_box');
+  if (lobbyBox.length == 1) {
+    hideRatingsInLobbyBox(lobbyBox[0]);
+  }
+}
+updateObservingState();
 
 // TODO: Run the following on the ingame page only.
 
@@ -66,7 +90,7 @@ observer.observe(document, { childList: true, subtree: true });
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
 var players = document.querySelectorAll('.side_box .players .player a.user_link');
-for (var player of players) {
+for (let player of players) {
   var match = ratingParenthesizedRE.exec(player.textContent);
   if (match) {
     player.innerText = match[1];  // TODO: plus match[2] for rating change, if desired

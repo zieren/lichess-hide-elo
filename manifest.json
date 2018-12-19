@@ -3,17 +3,35 @@
   "name": "Lichess hide Elo",
   "version": "0.1",
   "description": "Hides Elo ratings on lichess.org",
+  "icons": {
+    "16": "icons/icon-on.svg",
+    "48": "icons/icon-on.svg",
+    "96": "icons/icon-on.svg",
+    "128": "icons/icon-on.svg"
+  },
+	"page_action": {
+    "show_matches": ["*://lichess.org/*"],
+	  "browser_style": true,
+	  "default_icon": {
+	    "19": "icons/icon-on.svg",
+	    "38": "icons/icon-on.svg"
+	  },
+	  "default_title": "Lichess hide Elo"
+	},
   "content_scripts": [
     {
       "run_at": "document_start",
-      "matches": ["*://*.lichess.org/*", "*://lichess.org/*"],
+      "matches": ["*://lichess.org/*"],
       "css": ["hideEloInitially.css"]
     },
     {
       "run_at": "document_end",
-      "matches": ["*://*.lichess.org/*", "*://lichess.org/*"],
+      "matches": ["*://lichess.org/*"],
       "js": ["hideElo.js"],
       "css": ["hideElo.css"]
     }
-  ]
+  ],
+  "background": {
+    "scripts": ["background.js"]
+	}
 }
