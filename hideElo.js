@@ -20,7 +20,7 @@
 // Idea: Don't hide ratings in other users' games. (Just "*/tv/*"?)
 
 var ratingRE = /[123]?\d{3}\??/;
-var ratingParenthesizedRE = /(.*)\([123]?\d{3}\??\)(.*)/;  // TODO: Whitespace before parentheses.
+var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
 
 var enabled = true;  // XXX Read from storage.
 browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
@@ -29,10 +29,11 @@ var processMessage = function(message) {
   if (message.operation == 'iconClicked') {
     enabled = !enabled;
     updateObservingState();
+    processIngameLeftSidebox();
+    setStyles();
     browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
-    // TODO: Update page to reflect new state: Would need to keep the ratings somewhere...
   }
-}
+};
 browser.runtime.onMessage.addListener(processMessage);
 
 // TODO: Consider splitting this up for granularity.
@@ -51,9 +52,9 @@ var hideRatingsInLobbyBox = function(node) {
       hideRatingsInLobbyBox(childNode);
     }
   }
-}
+};
 
-var callback = function(mutationsList, observer) {
+var processAddedNodes = function(mutationsList, observer) {
   for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
     for (var node of mutation.addedNodes) {
@@ -70,7 +71,7 @@ var callback = function(mutationsList, observer) {
 };
 
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
-var observer = new MutationObserver(callback);
+var observer = new MutationObserver(processAddedNodes);
 var updateObservingState = function() {
   if (enabled) {
     observer.observe(document, { childList: true, subtree: true });
@@ -81,7 +82,7 @@ var updateObservingState = function() {
   if (lobbyBox.length == 1) {
     hideRatingsInLobbyBox(lobbyBox[0]);
   }
-}
+};
 updateObservingState();
 
 // TODO: Run the following on the ingame page only.
@@ -89,11 +90,29 @@ updateObservingState();
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
-var players = document.querySelectorAll('.side_box .players .player a.user_link');
-for (let player of players) {
-  var match = ratingParenthesizedRE.exec(player.textContent);
-  if (match) {
-    player.innerText = match[1];  // TODO: plus match[2] for rating change, if desired
-    player.classList.add('elo_hidden');
+var processIngameLeftSidebox = function() {
+  var players = document.querySelectorAll('.side_box .players .player a.user_link');
+  for (let player of players) {
+    if (enabled) {
+      var match = ratingParenthesizedRE.exec(player.firstChild.data);
+      if (match) {
+        player.firstChild.data = match[1];
+        player.firstChild.hiddenElo = match[2];
+        player.classList.add('elo_hidden');
+      }
+    } else {
+      if (player.firstChild.hiddenElo !== undefined) {
+        player.firstChild.data = player.firstChild.data + player.firstChild.hiddenElo;
+      }
+    }
   }
-}
+};
+processIngameLeftSidebox();
+
+var setStyles = function() {
+  if (enabled) {
+    document.body.classList.remove('no_hide_elo');
+  } else {
+    document.body.classList.add('no_hide_elo');
+  }
+};

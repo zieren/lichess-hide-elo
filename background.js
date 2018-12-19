@@ -10,7 +10,7 @@ var processMessage = function(message, sender, sendResponse) {
   } else if (message.operation == 'setIconOff') {
     browser.pageAction.setIcon({tabId: sender.tab.id, path: 'icons/icon-off.svg'});
   }
-}
+};
 browser.runtime.onMessage.addListener(processMessage);
 
 browser.pageAction.onClicked.addListener(tab => {
