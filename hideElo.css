@@ -37,8 +37,3 @@ body.no_hide_elo div.lobby_box td.hide_elo
 {
 	visibility: visible;
 }
-
-/* XXX */
-div.lobby_box table {
-  empty-cells: show;
-}
