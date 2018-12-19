@@ -22,13 +22,12 @@
     {
       "run_at": "document_start",
       "matches": ["*://lichess.org/*"],
-      "css": ["hideEloInitially.css"]
+      "css": ["hideElo.css"]
     },
     {
       "run_at": "document_end",
       "matches": ["*://lichess.org/*"],
-      "js": ["hideElo.js"],
-      "css": ["hideElo.css"]
+      "js": ["hideElo.js"]
     }
   ],
   "background": {

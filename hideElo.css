@@ -1,30 +1,32 @@
-/* TODO: Clean this up. */
+/* Hide ratings everywhere *while* the page is loading. */
 
 /* Ingame box on the right: rating */
-body.no_hide_elo .username rating,
+.username rating,
 /* Ingame box on the right: rating change */
-body.no_hide_elo .username .rp
-{
-	visibility: visible;
-}
-
+.username .rp,
 /* Tooltip over player name */
-body.no_hide_elo #powerTip .ratings
-{
-	visibility: visible;
-}
-
+#powerTip .ratings,
 /* Elo change in left side box */
-body.no_hide_elo .side_box .players .player .rp
+.side_box .players .player .rp
 {
-	visibility: visible;
+	visibility: hidden;
 }
 
-body.no_hide_elo .side_box .players .player a.user_link
+/* Prevent player links in the left ingame side box from flashing with ratings
+ * *while* the page is loading and before the content script runs at document_end.
+ * This is reversed by the content script using .elo_hidden (see below). */
+.side_box .players .player a.user_link
 {
-	visibility: visible;
+	visibility: hidden;
 }
 
+/* Show ratings when extension is off. */
+
+body.no_hide_elo .username rating,
+body.no_hide_elo .username .rp,
+body.no_hide_elo #powerTip .ratings,
+body.no_hide_elo .side_box .players .player .rp,
+body.no_hide_elo .side_box .players .player a.user_link,
 .side_box .players .player a.user_link.elo_hidden
 {
 	visibility: visible;

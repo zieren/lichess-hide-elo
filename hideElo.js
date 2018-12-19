@@ -15,7 +15,7 @@
  * script has finished running. The alternative would probably be to register the MutationObserver
  * at document_start, but that should be bad for performance.
  *
- * When modifying DOM elements, ratings are stored in a hiddenRating property so they can be
+ * When modifying DOM elements, ratings are stored in a hiddenElo property so they can be
  * restored when the extension is turned off.
  */
 
