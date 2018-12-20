@@ -77,7 +77,7 @@ function processIngameLeftSidebox() {
     if (match) {
       player.firstChild.textContent = match[1];  // Just the name.
       var rating = document.createElement('span');
-      rating.innerText = match[2];
+      rating.textContent = match[2];
       rating.classList.add('hide_elo');
       player.insertBefore(rating, player.childNodes[1]);  // Insert before rating change.
       // Lichess puts an nbsp between name and rating.
