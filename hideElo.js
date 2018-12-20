@@ -20,7 +20,7 @@
 // Idea: Don't hide ratings in other users' games.
 
 var ratingRE = /[123]?\d{3}\??/;
-var ratingParenthesizedRE = /(.*)(\([123]?\d{3}\??\))(.*)/;
+var ratingParenthesizedRE = /(.*)\b\s*(\([123]?\d{3}\??\))/;
 
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
@@ -73,9 +73,16 @@ var observer = new MutationObserver(processAddedNodes);
 function processIngameLeftSidebox() {
   var players = document.querySelectorAll('.side_box .players .player a.user_link');
   for (let player of players) {
-    var match = ratingParenthesizedRE.exec(player.innerHTML);
+    var match = ratingParenthesizedRE.exec(player.firstChild.textContent);
     if (match) {
-      player.innerHTML = match[1] + '<span class="hide_elo">' + match[2] + '</span>' + match[3];
+      player.firstChild.textContent = match[1];  // Just the name.
+      var rating = document.createElement('span');
+      rating.innerText = match[2];
+      rating.classList.add('hide_elo');
+      player.insertBefore(rating, player.childNodes[1]);  // Insert before rating change.
+      // Lichess puts an nbsp between name and rating.
+      var nbsp = document.createTextNode('\u00A0');
+      player.insertBefore(nbsp, rating);
       player.classList.add('elo_hidden');
     }
   }
