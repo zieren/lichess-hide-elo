@@ -20,7 +20,7 @@
 // Idea: Don't hide ratings in other users' games.
 
 var ratingRE = /[123]?\d{3}\??/;
-var ratingParenthesizedRE = /(.*)\b\s*(\([123]?\d{3}\??\))/;
+var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
 
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
@@ -67,22 +67,37 @@ function processAddedNodes(mutationsList, observer) {
 // TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
 var observer = new MutationObserver(processAddedNodes);
 
+function createSeparator() {
+  var nbsp = document.createTextNode('\u00A0');
+  var span = document.createElement('span');
+  span.classList.add('hide_elo_separator');
+  span.appendChild(nbsp);
+  return span;
+}
+
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
 function processIngameLeftSidebox() {
   var players = document.querySelectorAll('.side_box .players .player a.user_link');
   for (let player of players) {
-    var match = ratingParenthesizedRE.exec(player.firstChild.textContent);
+    // A title like IM is a separate node.
+    if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
+      var nameNode = player.childNodes[1];
+      player.insertBefore(createSeparator(), nameNode);
+    } else {
+      var nameNode = player.childNodes[0];
+    }
+    var match = ratingParenthesizedRE.exec(nameNode.textContent);
     if (match) {
-      player.firstChild.textContent = match[1];  // Just the name.
+      nameNode.textContent = match[1];  // Just the name.
       var rating = document.createElement('span');
       rating.textContent = match[2];
       rating.classList.add('hide_elo');
-      player.insertBefore(rating, player.childNodes[1]);  // Insert before rating change.
+      player.insertBefore(rating, nameNode.nextSibling);  // Insert before rating change.
       // Lichess puts an nbsp between name and rating.
-      var nbsp = document.createTextNode('\u00A0');
-      player.insertBefore(nbsp, rating);
+      player.insertBefore(createSeparator(), nameNode.nextSibling);
+      // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
     }
   }
