@@ -23,16 +23,16 @@
 // Idea: Don't hide ratings in other users' games.
 
 var ratingRE = /[123]?\d{3}\??/;
-var ratingParenthesizedRE = /(.*)\b(\s*\([123]?\d{3}\??\))/;
-
-var hiddenElos = new WeakMap();
+var ratingParenthesizedRE = /(.*)(\([123]?\d{3}\??\))(.*)/;
 
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
   if (message.operation == 'iconClicked') {
     enabled = !enabled;
   }
-  onEnabledStateChange();  // XXX why listen manually?
+  storeEnabledState();
+  setStyles();
+  setIconState();
 });
 
 // Recursively search the specified subtree for TR elements and (un)hide ratings in them.
@@ -50,6 +50,7 @@ function hideRatingsInLobbyBox(node) {
   }
 }
 
+// Callback for MutationObserver.
 function processAddedNodes(mutationsList, observer) {
   for (let mutation of mutationsList) {
     // As per the configuration we only observe mutation.type == 'childList'.
@@ -75,18 +76,10 @@ var observer = new MutationObserver(processAddedNodes);
 function processIngameLeftSidebox() {
   var players = document.querySelectorAll('.side_box .players .player a.user_link');
   for (let player of players) {
-    if (enabled) {
-      var match = ratingParenthesizedRE.exec(player.firstChild.data);
-      if (match) {
-        player.firstChild.data = match[1];
-        hiddenElos.set(player, match[2]);
-        player.classList.add('elo_hidden');
-      }
-    } else {
-      var hiddenElo = hiddenElos.get(player);
-      if (hiddenElo !== undefined) {
-        player.firstChild.data = player.firstChild.data + hiddenElo;
-      }
+    var match = ratingParenthesizedRE.exec(player.innerHTML);
+    if (match) {
+      player.innerHTML = match[1] + '<span class="hide_elo">' + match[2] + '</span>' + match[3];
+      player.classList.add('elo_hidden');
     }
   }
 }
@@ -99,23 +92,33 @@ function setStyles() {
   }
 }
 
-function onEnabledStateChange() {
+function storeEnabledState() {
   sessionStorage.setItem('enabled', enabled);
-  observer.observe(document, { childList: true, subtree: true });
-  processIngameLeftSidebox();
-  setStyles();
+}
+
+function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-//Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
-//Start out enabled to avoid flashing ratings.
+// Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
+// Start out enabled to avoid flashing ratings.
 var enabled = sessionStorage.getItem('enabled');
-if (enabled === null) {
+if (enabled === null) {  // Use default from sync storage.
   browser.storage.sync.get('defaultEnabled').then(result => {
-    enabled = result.defaultEnabled;  // XXX handle first run; is it undefined?
-    onEnabledStateChange();
+    enabled = result.defaultEnabled;
+    if (enabled === undefined) {
+      enabled = false;
+    }
+    storeEnabledState();
+    setStyles();
+    setIconState();
   });
 } else {
+  // Session storage uses Strings.
   enabled = enabled === 'true';
-  onEnabledStateChange(); // XXX don't overwrite the data we just read...
+  setStyles();
+  setIconState();
 }
+
+observer.observe(document, { childList: true, subtree: true });
+processIngameLeftSidebox();
