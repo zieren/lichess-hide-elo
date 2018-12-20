@@ -8,15 +8,12 @@
  *    superset. This will be fixed in step 3.
  * 2. At document_end, register a MutationObserver to handle the seek list. This is dynamically
  *    populated and initially empty, so the observer is active in time.
- * 3. Also at document_end, find the elements fully hidden in step 1, remove the ratings from
- *    their text and add a CSS class to make them visible again.
+ * 3. Also at document_end, find the player names hidden in step 1 and separate them from the
+ *    ratings, in a class that makes them always visible.
  *
  * So we initially hide a superset to make sure ratings don't even flash up briefly until the
- * script has finished running. The alternative would probably be to register the MutationObserver
- * at document_start, but that should be bad for performance.
- *
- * When modifying DOM elements, ratings are stored in a hiddenElo property so they can be
- * restored when the extension is turned off.
+ * script has finished running. When all classes are modified as needed, ratings can be shown/
+ * hidden by adding/removing the no_hide_elo class to/from the body.
  */
 
 // TODO: Consider performance optimization. E.g. only run required code depending on URL.
@@ -100,10 +97,13 @@ function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-// Whether the extension is enabled on the current tab. Will be overwritten from storage on load.
-// Start out enabled to avoid flashing ratings.
+observer.observe(document, { childList: true, subtree: true });
+processIngameLeftSidebox();
+
+// Whether the extension is enabled on the current tab.
 var enabled = sessionStorage.getItem('enabled');
-if (enabled === null) {  // Use default from sync storage.
+if (enabled === null) {
+  // Use default from sync storage. This uses actual booleans.
   browser.storage.sync.get('defaultEnabled').then(result => {
     enabled = result.defaultEnabled;
     if (enabled === undefined) {
@@ -119,6 +119,3 @@ if (enabled === null) {  // Use default from sync storage.
   setStyles();
   setIconState();
 }
-
-observer.observe(document, { childList: true, subtree: true });
-processIngameLeftSidebox();
