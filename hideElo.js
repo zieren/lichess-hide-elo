@@ -21,6 +21,7 @@
 
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
+var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
@@ -104,7 +105,8 @@ function processIngameLeftSidebox() {
 }
 
 function setStyles() {
-  if (enabled) {
+  var skipPage = skipPageRE.test(location.href);
+  if (enabled && !skipPage) {
     document.body.classList.remove('no_hide_elo');
   } else {
     document.body.classList.add('no_hide_elo');
