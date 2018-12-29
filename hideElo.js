@@ -22,7 +22,6 @@ var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
 // ---------- Seek list ----------
 
-// XXX What about removed nodes? I don't think we listen to those with the specified options.
 function observeLobbyBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
@@ -36,7 +35,7 @@ function observeLobbyBox(mutations) {
 function hideRatingsInSeekList(rows) {
   rows.forEach(function(row) {
     if (row.children.length >= 3) {
-      var cell = row.children[2];  // XXX also test for matches(...)?
+      var cell = row.children[2];
       // This is really just a hack to skip the top row (which contains headings):
       if (ratingRE.test(cell.textContent)) {
         cell.classList.add('hide_elo');
