@@ -95,7 +95,9 @@ function processIngameLeftSidebox() {
       var rating = document.createElement('span');
       rating.textContent = match[2];
       rating.classList.add('hide_elo');
-      player.insertBefore(rating, nameNode.nextSibling);  // Insert before rating change.
+      // Insert before rating change if it exists (i.e. it's a rated game), or else at the end if
+      // nextSibling is null.
+      player.insertBefore(rating, nameNode.nextSibling);
       // Lichess puts an nbsp between name and rating.
       player.insertBefore(createSeparator(), nameNode.nextSibling);
       // Indicate that it's now safe to show the player name.
