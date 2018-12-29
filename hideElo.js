@@ -65,9 +65,6 @@ function processAddedNodes(mutationsList, observer) {
   }
 }
 
-// TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
-var observer = new MutationObserver(processAddedNodes);
-
 function createSeparator() {
   var nbsp = document.createTextNode('\u00A0');
   var span = document.createElement('span');
@@ -123,7 +120,10 @@ function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-observer.observe(document, { childList: true, subtree: true });
+var hooksWrap = document.querySelector('div#hooks_wrap');
+if (hooksWrap) {
+  new MutationObserver(processAddedNodes).observe(hooksWrap, { childList: true, subtree: true });
+}
 processIngameLeftSidebox();
 
 // Whether the extension is enabled on the current tab.
