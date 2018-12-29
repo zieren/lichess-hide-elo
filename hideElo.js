@@ -16,82 +16,50 @@
  * hidden by adding/removing the no_hide_elo class to/from the body.
  */
 
-// TODO: Consider performance optimization. E.g. only run required code depending on URL.
-// Idea: Don't hide ratings in other users' games.
-
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
-// Process clicks on the icon, sent from the background script.
-browser.runtime.onMessage.addListener(message => {
-  if (message.operation == 'iconClicked') {
-    enabled = !enabled;
-  }
-  storeEnabledState();
-  setStyles();
-  setIconState();
-});
+// ---------- Seek list ----------
+
+// XXX What about removed nodes? I don't think we listen to those with the specified options.
+function observeLobbyBox(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      hideRatingsInSeekList(node.querySelectorAll('div.lobby_box table tr td'));
+    });
+  });
+}
 
 // Recursively search the specified subtree for TR elements and (un)hide ratings in them.
-function hideRatingsInLobbyBox(node) {
-  if (node.tagName == 'TR' && node.children.length >= 3) {
-    var td = node.children[2];
-    // This is really just a hack to skip the first row (which contains headings):
-    if (ratingRE.test(td.textContent)) {
-      td.classList.add('hide_elo');
-    }
-  } else if (node.children) {
-    for (let childNode of node.children) {
-      hideRatingsInLobbyBox(childNode);
-    }
-  }
-}
-
-// Callback for MutationObserver.
-// XXX What about removed nodes?
-function processAddedNodes(mutationsList) {
-  console.log(mutationsList);
-  // As per the configuration we only observe mutation.type == 'childList'.
-  for (let mutation of mutationsList) {
-    // XXX Maybe this is where we need to intercept? Or use the ParanoidObserver instead!
-    for (let node of mutation.addedNodes) {
-      if (typeof node.matches == 'function') {
-        // ----- Case 1: The lobby box.
-        // The entire box can be added at once, e.g. by clicking its tab or when returning from the
-        // filter settings. Normally table rows are added.
-        if (node.matches('div.lobby_box')  // XXX performance?
-            || node.matches('div.lobby_box table')
-            || node.tagName == 'TR') {
-          hideRatingsInLobbyBox(node);
-        // } else if (node.matches('.side_box div.players .player a.user_link')) {
-        } else if (node.matches('.side_box')) {
-          // ----- Case 2: The ingame left sidebox.  XXX improve the code above?
-          console.log('sneaky');
-          console.log(node);
-        } else if (ratingRE.test(node.innerText)) {  // XXX
-          console.log(node);
-        }
+function hideRatingsInSeekList(cells) {
+  cells.forEach(function(cell) {
+    if (cell.parentNode && cell.parentNode.children.length >= 3 && cell.parentNode.children[2] === cell) {
+      // This is really just a hack to skip the top row (which contains headings):
+      if (ratingRE.test(cell.textContent)) {
+        cell.classList.add('hide_elo');
       }
     }
-  }
+  });
 }
 
-function createSeparator() {
-  var nbsp = document.createTextNode('\u00A0');
-  var span = document.createElement('span');
-  span.classList.add('hide_elo_separator');
-  span.appendChild(nbsp);
-  return span;
+var hooksWrap = document.querySelector('div#hooks_wrap');
+if (hooksWrap) {
+  new MutationObserver(observeLobbyBox).observe(hooksWrap, {childList: true, subtree: true});
 }
 
-// Process the player names in the left side box of the game view. NOTE: When hovering over these
-// they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
-// it will show the text from the link.
-function processIngameLeftSidebox() {
-  var players = document.querySelectorAll('.side_box div.players .player a.user_link');
-  console.log(players);
-  for (let player of players) {
+// ---------- Ingame left side box ----------
+
+function observeLeftSideBox(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      hideRatingsInLeftSidebox(node.querySelectorAll('.side_box div.players .player a.user_link'));
+    });
+  });
+}
+
+function hideRatingsInLeftSidebox(players) {
+  players.forEach(function(player) {
     // A title like IM is a separate node.
     if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
       var nameNode = player.childNodes[1];
@@ -100,7 +68,6 @@ function processIngameLeftSidebox() {
       var nameNode = player.childNodes[0];
     }
     var match = ratingParenthesizedRE.exec(nameNode.textContent);
-    console.log(match);
     if (match) {
       nameNode.textContent = match[1];  // Just the name.
       var rating = document.createElement('span');
@@ -113,35 +80,29 @@ function processIngameLeftSidebox() {
       player.insertBefore(createSeparator(), nameNode.nextSibling);
       // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
-      console.log(player);
     }
-  }
-  console.log('Finished processing left sidebox');
+  });
 }
 
-//XXX Might need to observe characterData. And what about removed nodes?
-//=========>>> Attach an observer for *.* to the modified node!!!
-// -> Player names are updated after the game with the rating change.
-// -----> XXX Add observer to parent, or document or something, because the node itself will
-// be replaced! Need to be far enough up the DOM to avoid being replaced, so maybe the sidebox's
-// top node or something.
-function addParanoidObserver(element) {
-  new MutationObserver(function(mutations) {
-    for (let mutation of mutations) {
-      console.log(mutation);
-    }
-  }).observe(element, {
-    childList: true,
-    attributes: true,
-    characterData: true,
-    subtree: true });
-  console.log('observing element:');
-  console.log(element);
+function createSeparator() {
+  var nbsp = document.createTextNode('\u00A0');
+  var span = document.createElement('span');
+  span.classList.add('hide_elo_separator');
+  span.appendChild(nbsp);
+  return span;
 }
-var boardLeftSide = document.querySelector('div.board_left div.side');
-if (boardLeftSide) {
-  addParanoidObserver(boardLeftSide);
+
+var boardLeft = document.querySelector('div.board_left');
+if (boardLeft) {
+  new MutationObserver(observeLeftSideBox).observe(boardLeft, {childList: true, subtree: true });
 }
+
+// Process the player names in the left side box of the game view. NOTE: When hovering over these
+// they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
+// it will show the text from the link.
+hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .player a.user_link'));
+
+// ---------- Toggle on/off ----------
 
 function setStyles() {
   var skipPage = skipPageRE.test(location.href);
@@ -152,19 +113,27 @@ function setStyles() {
   }
 }
 
-function storeEnabledState() {
-  sessionStorage.setItem('enabled', enabled);
-}
+// ---------- Clicks on the icon ----------
+
+// Process clicks on the icon, sent from the background script.
+browser.runtime.onMessage.addListener(message => {
+  if (message.operation == 'iconClicked') {
+    enabled = !enabled;
+  }
+  storeEnabledState();
+  setStyles();
+  setIconState();
+});
 
 function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-var hooksWrap = document.querySelector('div#hooks_wrap');
-if (hooksWrap) {
-  new MutationObserver(processAddedNodes).observe(hooksWrap, { childList: true, subtree: true });
+// ---------- Store/retrieve enabled state ----------
+
+function storeEnabledState() {
+  sessionStorage.setItem('enabled', enabled);
 }
-processIngameLeftSidebox();
 
 // Whether the extension is enabled on the current tab.
 var enabled = sessionStorage.getItem('enabled');
