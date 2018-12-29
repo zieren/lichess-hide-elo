@@ -48,25 +48,59 @@ function hideRatingsInLobbyBox(node) {
   }
 }
 
+function processLeftSidebox(player) {  // XXX unused?
+  // A title like IM is a separate node.
+  if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
+    var nameNode = player.childNodes[1];
+    player.insertBefore(createSeparator(), nameNode);
+  } else {
+    var nameNode = player.childNodes[0];
+  }
+  var match = ratingParenthesizedRE.exec(nameNode.textContent);
+  console.log(match);
+  if (match) {
+    nameNode.textContent = match[1];  // Just the name.
+    var rating = document.createElement('span');
+    rating.textContent = match[2];
+    rating.classList.add('hide_elo');
+    player.insertBefore(rating, nameNode.nextSibling);  // Insert before rating change.
+    // XXX Casual games don't have a rating change - will this fail? XXX
+    // Lichess puts an nbsp between name and rating.
+    player.insertBefore(createSeparator(), nameNode.nextSibling);
+    // Indicate that it's now safe to show the player name.
+    player.classList.add('elo_hidden');
+  }
+}
+
 // Callback for MutationObserver.
-function processAddedNodes(mutationsList, observer) {
+// XXX What about removed nodes?
+function processAddedNodes(mutationsList) {
+  console.log(mutationsList);
+  // As per the configuration we only observe mutation.type == 'childList'.
   for (let mutation of mutationsList) {
-    // As per the configuration we only observe mutation.type == 'childList'.
-    for (var node of mutation.addedNodes) {
-      // The entire box can be added at once, e.g. by clicking its tab...
-      var lobbyBoxAsDiv = node.tagName == 'DIV' && node.classList.contains('lobby_box');
-      // ... or when returning from the filter settings.
-      var lobbyBoxAsTable = node.tagName == 'TABLE'
-        && node.parentNode.tagName == 'DIV' && node.parentNode.classList.contains('lobby_box');
-      if (node.tagName == 'TR' || lobbyBoxAsDiv || lobbyBoxAsTable) {
-        hideRatingsInLobbyBox(node);
+    // XXX Maybe this is where we need to intercept? Or use the ParanoidObserver instead!
+    for (let node of mutation.addedNodes) {
+      if (typeof node.matches == 'function') {
+        // ----- Case 1: The lobby box.
+        // The entire box can be added at once, e.g. by clicking its tab or when returning from the
+        // filter settings. Normally table rows are added.
+        if (node.matches('div.lobby_box')  // XXX performance?
+            || node.matches('div.lobby_box table')
+            || node.tagName == 'TR') {
+          hideRatingsInLobbyBox(node);
+        // } else if (node.matches('.side_box div.players .player a.user_link')) {
+        } else if (node.matches('.side_box')) {
+          // ----- Case 2: The ingame left sidebox.  XXX improve the code above?
+          console.log('sneaky');
+          console.log(node);
+          // processLeftSidebox(node);
+        } else if (ratingRE.test(node.innerText)) {  // XXX
+          console.log(node);
+        }
       }
     }
   }
 }
-
-// TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
-var observer = new MutationObserver(processAddedNodes);
 
 function createSeparator() {
   var nbsp = document.createTextNode('\u00A0');
@@ -80,7 +114,8 @@ function createSeparator() {
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
 function processIngameLeftSidebox() {
-  var players = document.querySelectorAll('.side_box .players .player a.user_link');
+  var players = document.querySelectorAll('.side_box div.players .player a.user_link');
+  console.log(players);
   for (let player of players) {
     // A title like IM is a separate node.
     if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
@@ -90,19 +125,44 @@ function processIngameLeftSidebox() {
       var nameNode = player.childNodes[0];
     }
     var match = ratingParenthesizedRE.exec(nameNode.textContent);
+    console.log(match);
     if (match) {
       nameNode.textContent = match[1];  // Just the name.
       var rating = document.createElement('span');
       rating.textContent = match[2];
       rating.classList.add('hide_elo');
       player.insertBefore(rating, nameNode.nextSibling);  // Insert before rating change.
+      // XXX Casual games don't have a rating change - will this fail? XXX
       // Lichess puts an nbsp between name and rating.
       player.insertBefore(createSeparator(), nameNode.nextSibling);
       // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
+      console.log(player);
     }
   }
+  console.log('Finished processing left sidebox');
 }
+
+//XXX Might need to observe characterData. And what about removed nodes?
+//=========>>> Attach an observer for *.* to the modified node!!!
+// -> Player names are updated after the game with the rating change.
+// -----> XXX Add observer to parent, or document or something, because the node itself will
+// be replaced! Need to be far enough up the DOM to avoid being replaced, so maybe the sidebox's
+// top node or something.
+function addParanoidObserver(element) {
+  new MutationObserver(function(mutations) {
+    for (let mutation of mutations) {
+      console.log(mutation);
+    }
+  }).observe(element, {
+    childList: true,
+    attributes: true,
+    characterData: true,
+    subtree: true });
+  console.log('observing element:');
+  console.log(element);
+}
+addParanoidObserver(document.querySelector('div.board_left div.side'));
 
 function setStyles() {
   var skipPage = skipPageRE.test(location.href);
@@ -121,7 +181,15 @@ function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-observer.observe(document, { childList: true, subtree: true });
+// TODO: Is the default run_at: document_idle fast enough? Or do we need to run at document_start?
+var observer = new MutationObserver(processAddedNodes);
+// XXX Might need to observe characterData. And what about removed nodes?
+// =========>>> Attach an observer for *.* to the modified node!!!
+var hooksWrap = document.querySelector('div#hooks_wrap');
+if (hooksWrap) {
+  observer.observe(hooksWrap, { childList: true, subtree: true });
+}
+
 processIngameLeftSidebox();
 
 // Whether the extension is enabled on the current tab.
