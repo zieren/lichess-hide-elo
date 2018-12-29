@@ -16,69 +16,51 @@
  * hidden by adding/removing the no_hide_elo class to/from the body.
  */
 
-// TODO: Consider performance optimization. E.g. only run required code depending on URL.
-// Idea: Don't hide ratings in other users' games.
-
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
-// Process clicks on the icon, sent from the background script.
-browser.runtime.onMessage.addListener(message => {
-  if (message.operation == 'iconClicked') {
-    enabled = !enabled;
-  }
-  storeEnabledState();
-  setStyles();
-  setIconState();
-});
+// ---------- Seek list ----------
 
-// Recursively search the specified subtree for TR elements and (un)hide ratings in them.
-function hideRatingsInLobbyBox(node) {
-  if (node.tagName == 'TR' && node.children.length >= 3) {
-    var td = node.children[2];
-    // This is really just a hack to skip the first row (which contains headings):
-    if (ratingRE.test(td.textContent)) {
-      td.classList.add('hide_elo');
-    }
-  } else if (node.children) {
-    for (let childNode of node.children) {
-      hideRatingsInLobbyBox(childNode);
-    }
-  }
+function observeLobbyBox(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      // When new seeks come in, individual rows are added. When switching tabs or switching back
+      // from the filter settings the whole table is rebuilt and re-added.
+      hideRatingsInSeekList(node.tagName == 'TR' ? [node] : node.querySelectorAll('tr'));
+    });
+  });
 }
 
-// Callback for MutationObserver.
-function processAddedNodes(mutationsList, observer) {
-  for (let mutation of mutationsList) {
-    // As per the configuration we only observe mutation.type == 'childList'.
-    for (var node of mutation.addedNodes) {
-      // The entire box can be added at once, e.g. by clicking its tab...
-      var lobbyBoxAsDiv = node.tagName == 'DIV' && node.classList.contains('lobby_box');
-      // ... or when returning from the filter settings.
-      var lobbyBoxAsTable = node.tagName == 'TABLE'
-        && node.parentNode.tagName == 'DIV' && node.parentNode.classList.contains('lobby_box');
-      if (node.tagName == 'TR' || lobbyBoxAsDiv || lobbyBoxAsTable) {
-        hideRatingsInLobbyBox(node);
+function hideRatingsInSeekList(rows) {
+  rows.forEach(function(row) {
+    if (row.children.length >= 3) {
+      var cell = row.children[2];
+      // This is really just a hack to skip the top row (which contains headings):
+      if (ratingRE.test(cell.textContent)) {
+        cell.classList.add('hide_elo');
       }
     }
-  }
+  });
 }
 
-function createSeparator() {
-  var nbsp = document.createTextNode('\u00A0');
-  var span = document.createElement('span');
-  span.classList.add('hide_elo_separator');
-  span.appendChild(nbsp);
-  return span;
+var hooksWrap = document.querySelector('div#hooks_wrap');
+if (hooksWrap) {
+  new MutationObserver(observeLobbyBox).observe(hooksWrap, {childList: true, subtree: true});
 }
 
-// Process the player names in the left side box of the game view. NOTE: When hovering over these
-// they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
-// it will show the text from the link.
-function processIngameLeftSidebox() {
-  var players = document.querySelectorAll('.side_box .players .player a.user_link');
-  for (let player of players) {
+// ---------- Ingame left side box ----------
+
+function observeLeftSideBox(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      hideRatingsInLeftSidebox(node.querySelectorAll('.side_box div.players .player a.user_link'));
+    });
+  });
+}
+
+function hideRatingsInLeftSidebox(players) {
+  players.forEach(function(player) {
     // A title like IM is a separate node.
     if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
       var nameNode = player.childNodes[1];
@@ -100,8 +82,28 @@ function processIngameLeftSidebox() {
       // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
     }
-  }
+  });
 }
+
+function createSeparator() {
+  var nbsp = document.createTextNode('\u00A0');
+  var span = document.createElement('span');
+  span.classList.add('hide_elo_separator');
+  span.appendChild(nbsp);
+  return span;
+}
+
+var boardLeft = document.querySelector('div.board_left');
+if (boardLeft) {
+  new MutationObserver(observeLeftSideBox).observe(boardLeft, {childList: true, subtree: true });
+}
+
+// Process the player names in the left side box of the game view. NOTE: When hovering over these
+// they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
+// it will show the text from the link.
+hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .player a.user_link'));
+
+// ---------- Toggle on/off ----------
 
 function setStyles() {
   var skipPage = skipPageRE.test(location.href);
@@ -112,19 +114,27 @@ function setStyles() {
   }
 }
 
-function storeEnabledState() {
-  sessionStorage.setItem('enabled', enabled);
-}
+// ---------- Clicks on the icon ----------
+
+// Process clicks on the icon, sent from the background script.
+browser.runtime.onMessage.addListener(message => {
+  if (message.operation == 'iconClicked') {
+    enabled = !enabled;
+  }
+  storeEnabledState();
+  setStyles();
+  setIconState();
+});
 
 function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-var hooksWrap = document.querySelector('div#hooks_wrap');
-if (hooksWrap) {
-  new MutationObserver(processAddedNodes).observe(hooksWrap, { childList: true, subtree: true });
+// ---------- Store/retrieve enabled state ----------
+
+function storeEnabledState() {
+  sessionStorage.setItem('enabled', enabled);
 }
-processIngameLeftSidebox();
 
 // Whether the extension is enabled on the current tab.
 var enabled = sessionStorage.getItem('enabled');
