@@ -26,15 +26,17 @@ var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 function observeLobbyBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
-      hideRatingsInSeekList(node.querySelectorAll('div.lobby_box table tr td'));
+      // Over time individual rows are added. When switching tabs or switching back from the filter
+      // settings the whole table is rebuilt and re-added.
+      hideRatingsInSeekList(node.tagName == 'TR' ? [node] : node.querySelectorAll('tr'));
     });
   });
 }
 
-// Recursively search the specified subtree for TR elements and (un)hide ratings in them.
-function hideRatingsInSeekList(cells) {
-  cells.forEach(function(cell) {
-    if (cell.parentNode && cell.parentNode.children.length >= 3 && cell.parentNode.children[2] === cell) {
+function hideRatingsInSeekList(rows) {
+  rows.forEach(function(row) {
+    if (row.children.length >= 3) {
+      var cell = row.children[2];  // XXX also test for matches(...)?
       // This is really just a hack to skip the top row (which contains headings):
       if (ratingRE.test(cell.textContent)) {
         cell.classList.add('hide_elo');
