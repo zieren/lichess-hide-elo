@@ -26,8 +26,8 @@ var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 function observeLobbyBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
-      // Over time individual rows are added. When switching tabs or switching back from the filter
-      // settings the whole table is rebuilt and re-added.
+      // When new seeks come in, individual rows are added. When switching tabs or switching back
+      // from the filter settings the whole table is rebuilt and re-added.
       hideRatingsInSeekList(node.tagName == 'TR' ? [node] : node.querySelectorAll('tr'));
     });
   });
