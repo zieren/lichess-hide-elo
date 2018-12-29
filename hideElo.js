@@ -27,7 +27,11 @@ function observeLobbyBox(mutations) {
     mutation.addedNodes.forEach(function(node) {
       // When new seeks come in, individual rows are added. When switching tabs or switching back
       // from the filter settings the whole table is rebuilt and re-added.
-      hideRatingsInSeekList(node.tagName == 'TR' ? [node] : node.querySelectorAll('tr'));
+      if (node.tagName === 'TR') {
+        hideRatingsInSeekList([node]);
+      } else if (typeof node.querySelectorAll === 'function') {
+        hideRatingsInSeekList(node.querySelectorAll('tr'));
+      }
     });
   });
 }
@@ -54,7 +58,9 @@ if (hooksWrap) {
 function observeLeftSideBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
-      hideRatingsInLeftSidebox(node.querySelectorAll('.side_box div.players .player a.user_link'));
+      if (typeof node.querySelectorAll === 'function') {
+        hideRatingsInLeftSidebox(node.querySelectorAll('.side_box div.players .player a.user_link'));
+      }
     });
   });
 }
