@@ -138,7 +138,10 @@ function addParanoidObserver(element) {
   console.log('observing element:');
   console.log(element);
 }
-addParanoidObserver(document.querySelector('div.board_left div.side'));
+var boardLeftSide = document.querySelector('div.board_left div.side');
+if (boardLeftSide) {
+  addParanoidObserver(boardLeftSide);
+}
 
 function setStyles() {
   var skipPage = skipPageRE.test(location.href);
