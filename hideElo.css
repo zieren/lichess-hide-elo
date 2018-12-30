@@ -17,7 +17,9 @@ div.lobby_box td.hide_elo,
 .side_box .players .player a.user_link .hide_elo,
 /* Tooltip over player name *while* loading. */
 #powerTip .user_link .hide_elo,
-#powerTip .user_link .rp
+#powerTip .user_link .rp,
+/* Analysis board: rating change */
+div.advice_summary a.user_link .rp
 {
 	visibility: hidden;
 }
@@ -48,7 +50,8 @@ body.no_hide_elo .side_box .players .player a.user_link,
 body.no_hide_elo div.lobby_box td.hide_elo,
 body.no_hide_elo .side_box .players .player a.user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .hide_elo,
-body.no_hide_elo #powerTip .user_link .rp
+body.no_hide_elo #powerTip .user_link .rp,
+body.no_hide_elo div.advice_summary a.user_link .rp
 {
 	visibility: visible;
 }
