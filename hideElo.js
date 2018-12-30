@@ -18,6 +18,7 @@
 
 var ratingRE = /[123]?\d{3}\??/;
 var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
+var ratingInTooltipGameRE = /(W?[A-Z]M\b)?\s*(.*)\s+(\([123]?\d{3}\??\))\s+(.*)/;
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
 // ---------- Seek list ----------
@@ -108,6 +109,60 @@ if (boardLeft) {
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the link.
 hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .player a.user_link'));
+
+// ---------- Tooltip with running game ----------
+
+function observeTooltip(mutations) {
+  try{
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      if (typeof node.matches === 'function') {
+        if (node.matches('#powerTip div.game_legend')) {
+          hideRatingsInTooltipGame(node);
+        }
+      }
+    });
+  });
+  }catch(err){console.log(err);}
+}
+
+//var ratingInTooltipGameRE = /(W?[A-Z]M\b)?\s*(.*)\s+(\([123]?\d{3}\??\))\s*(.*)/;
+function hideRatingsInTooltipGame(node) {
+  try{
+  var match = ratingInTooltipGameRE.exec(node.textContent);
+  if (match) {
+    node.textContent = '';
+    var legend = document.createElement('span');
+    if (match[1]) {
+      var title = document.createElement('span');
+      title.textContent = match[1];
+      title.classList.add('hide_elo');
+      legend.appendChild(title);
+      legend.appendChild(createSeparator());
+    }
+    var name = document.createElement('span');
+    name.textContent = match[2];
+    legend.appendChild(name);
+    var separatorBeforeRating = createSeparator();
+    separatorBeforeRating.classList.add('hide_elo');
+    legend.appendChild(separatorBeforeRating);
+    var rating = document.createElement('span');
+    rating.textContent = match[3];
+    rating.classList.add('hide_elo');
+    legend.appendChild(rating);
+    legend.appendChild(createSeparator());  // XXX need to remove class from one of them
+    var game = document.createElement('span');
+    game.textContent = match[4];
+    legend.appendChild(game);
+    node.appendChild(legend);
+  }
+  }catch(err){console.log(err);}
+}
+
+// XXX Maybe find a better name than "elo_hidden"
+
+// XXX This seems expensive...
+new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true });
 
 // ---------- Toggle on/off ----------
 

@@ -26,7 +26,9 @@ div.advice_summary a.user_link .rp
 
 /* Ingame box on the left: chess title (IM etc.) */
 .side_box .players .player a.user_link .title,
-.side_box .players .player a.user_link .hide_elo_separator
+.side_box .players .player a.user_link .hide_elo_separator,
+/* Tooltip showing a user's current game (with the opponent's rating) */
+#powerTip div.game_legend .hide_elo
 {
 	display: none;
 }
@@ -51,13 +53,16 @@ body.no_hide_elo div.lobby_box td.hide_elo,
 body.no_hide_elo .side_box .players .player a.user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .rp,
-body.no_hide_elo div.advice_summary a.user_link .rp
+body.no_hide_elo div.advice_summary a.user_link .rp,
+body.no_hide_elo #powerTip div.game_legend,
+#powerTip div.game_legend .elo_hidden
 {
 	visibility: visible;
 }
 
 body.no_hide_elo .side_box .players .player a.user_link .title,
-body.no_hide_elo .side_box .players .player a.user_link .hide_elo_separator
+body.no_hide_elo .side_box .players .player a.user_link .hide_elo_separator,
+body.no_hide_elo #powerTip div.game_legend .hide_elo
 {
 	display: initial;
 }
