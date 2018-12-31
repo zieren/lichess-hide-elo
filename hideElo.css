@@ -28,7 +28,7 @@ div.advice_summary a.user_link .rp
 .side_box .players .player a.user_link .title,
 .side_box .players .player a.user_link .hide_elo_separator,
 /* Tooltip over player name: title */
-#powerTip a.user_link span.title
+#powerTip .user_link .title
 {
 	display: none;
 }
@@ -60,7 +60,7 @@ body.no_hide_elo div.advice_summary a.user_link .rp
 
 body.no_hide_elo .side_box .players .player a.user_link .title,
 body.no_hide_elo .side_box .players .player a.user_link .hide_elo_separator,
-body.no_hide_elo #powerTip a.user_link span.title
+body.no_hide_elo #powerTip .user_link .title
 {
 	display: initial;
 }
