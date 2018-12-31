@@ -125,18 +125,19 @@ hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .playe
 // ---------- Tooltip with running game ----------
 
 function observeTooltip(mutations) {
+  if (!enabled) {
+    return;
+  }
+  // Enabled state can't be toggled while the tooltip is shown, so we don't need to use CSS.
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
       if (typeof node.matches === 'function') {
         if (node.matches('#powerTip div.game_legend')) {
           hideRatingsInTooltipGame(node);
-        } else if (enabled && node.matches('#powerTip a.mini_board')) {
-          // Enabled state can't be toggled while the tooltip is shown,
-          // so we can use a static string.
-          var match = tooltipGameTitleRE.exec(node.title);
-          if (match) {
-            node.title = match[2] + ' vs ' + match[5] + ' ' + match[7];
-          }
+        } else if (node.matches('a.mini_board')) {
+          hideRatingsInMetaTooltip(node);
+        } else if (node.matches('div.vstext.clearfix')) {
+          hideRatingsInMiniGame(node);
         }
       }
     });
@@ -146,30 +147,26 @@ function observeTooltip(mutations) {
 function hideRatingsInTooltipGame(node) {
   var match = tooltipGameLegendRE.exec(node.textContent);
   if (match) {
-    node.textContent = '';
-    var legend = document.createElement('span');
-    if (match[1]) {
-      var title = document.createElement('span');
-      title.textContent = match[1];
-      title.classList.add('hide_elo');
-      legend.appendChild(title);
-      legend.appendChild(createSeparator());
-    }
-    var name = document.createElement('span');
-    name.textContent = match[2];
-    legend.appendChild(name);
-    var separatorBeforeRating = createSeparator();
-    separatorBeforeRating.classList.add('hide_elo');
-    legend.appendChild(separatorBeforeRating);
-    var rating = document.createElement('span');
-    rating.textContent = match[3];
-    rating.classList.add('hide_elo');
-    legend.appendChild(rating);
-    legend.appendChild(createSeparator());
-    var game = document.createElement('span');
-    game.textContent = match[4];
-    legend.appendChild(game);
-    node.appendChild(legend);
+    node.textContent = match[2] + ' ' + match[4];
+  }
+}
+
+function hideRatingsInMetaTooltip(node) {
+  var match = tooltipGameTitleRE.exec(node.title);
+  if (match) {
+    node.title = match[2] + ' vs ' + match[5] + ' ' + match[7];
+  }
+}
+
+function hideRatingsInMiniGame(node) {
+  if (typeof node.querySelectorAll === 'function') {
+    var players = node.querySelectorAll('div.user_link');
+    players.forEach(function(player) {
+      // First child is the <br>, next come title and rating.
+      while (player.childNodes.length > 1) {
+        player.childNodes[player.childNodes.length - 1].remove();
+      }
+    });
   }
 }
 
