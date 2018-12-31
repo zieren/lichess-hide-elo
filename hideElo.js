@@ -16,10 +16,22 @@
  * hidden by adding/removing the no_hide_elo class to/from the body.
  */
 
-var ratingRE = /[123]?\d{3}\??/;
-var ratingParenthesizedRE = /(?:\s*)(.*)\b\s*(\([123]?\d{3}\??\))/;
-var ratingInTooltipGameRE = /(W?[A-Z]M\b)?\s*(.*)\s+(\([123]?\d{3}\??\))\s+(.*)/;
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
+
+// Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)".
+var titleNameRating = '(W?[A-Z]M\\s+)?(\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
+
+// Matches a plain rating, like "666" or "2345".
+var ratingRE = /[123]?\d{3}\??/;
+
+// Matches name and rating in the left sidebox, e.g. "foobar (1500?)".
+var leftSideboxNameRatingRE = /(\S*)\s+(\([123]?\d{3}\??\))/;
+
+// Matches the legend shown below a game in the #powerTip, e.g. "IM foobar (2400) • 1+0".
+var tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
+
+// Matches the tooltip of the #powerTip, e.g. "GM foobar (2500) vs baz (1500?) • 15+15".
+var tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
 
 // ---------- Seek list ----------
 
@@ -75,7 +87,7 @@ function hideRatingsInLeftSidebox(players) {
     } else {
       var nameNode = player.childNodes[0];
     }
-    var match = ratingParenthesizedRE.exec(nameNode.textContent);
+    var match = leftSideboxNameRatingRE.exec(nameNode.textContent);
     if (match) {
       nameNode.textContent = match[1];  // Just the name.
       var rating = document.createElement('span');
@@ -113,23 +125,26 @@ hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .playe
 // ---------- Tooltip with running game ----------
 
 function observeTooltip(mutations) {
-  try{
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
       if (typeof node.matches === 'function') {
         if (node.matches('#powerTip div.game_legend')) {
           hideRatingsInTooltipGame(node);
+        } else if (enabled && node.matches('#powerTip a.mini_board')) {
+          // Enabled state can't be toggled while the tooltip is shown,
+          // so we can use a static string.
+          var match = tooltipGameTitleRE.exec(node.title);
+          if (match) {
+            node.title = match[2] + ' vs ' + match[5] + ' ' + match[7];
+          }
         }
       }
     });
   });
-  }catch(err){console.log(err);}
 }
 
-//var ratingInTooltipGameRE = /(W?[A-Z]M\b)?\s*(.*)\s+(\([123]?\d{3}\??\))\s*(.*)/;
 function hideRatingsInTooltipGame(node) {
-  try{
-  var match = ratingInTooltipGameRE.exec(node.textContent);
+  var match = tooltipGameLegendRE.exec(node.textContent);
   if (match) {
     node.textContent = '';
     var legend = document.createElement('span');
@@ -150,18 +165,14 @@ function hideRatingsInTooltipGame(node) {
     rating.textContent = match[3];
     rating.classList.add('hide_elo');
     legend.appendChild(rating);
-    legend.appendChild(createSeparator());  // XXX need to remove class from one of them
+    legend.appendChild(createSeparator());
     var game = document.createElement('span');
     game.textContent = match[4];
     legend.appendChild(game);
     node.appendChild(legend);
   }
-  }catch(err){console.log(err);}
 }
 
-// XXX Maybe find a better name than "elo_hidden"
-
-// XXX This seems expensive...
 new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true });
 
 // ---------- Toggle on/off ----------
