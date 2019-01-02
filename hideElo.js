@@ -122,7 +122,7 @@ if (boardLeft) {
 // it will show the text from the link.
 hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .player a.user_link'));
 
-// ---------- Tooltip with running game ----------
+// ---------- Tooltip ----------
 
 function observeTooltip(mutations) {
   if (!enabled) {
@@ -134,9 +134,9 @@ function observeTooltip(mutations) {
       if (typeof node.matches === 'function') {
         if (node.matches('#powerTip div.game_legend')) {
           hideRatingsInTooltipGame(node);
-        } else if (node.matches('a.mini_board')) {
+        } else if (node.matches('div#miniGame a.mini_board')) {
           hideRatingsInMetaTooltip(node);
-        } else if (node.matches('div.vstext.clearfix')) {
+        } else if (node.matches('div#miniGame div.vstext.clearfix')) {
           hideRatingsInMiniGame(node);
         }
       }
