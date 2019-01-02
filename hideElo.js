@@ -33,6 +33,10 @@ var tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
 // Matches the tooltip of the #powerTip, e.g. "GM foobar (2500) vs baz (1500?) • 15+15".
 var tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
 
+// Matches the TV title, e.g. "foo (1234) - bar (2345) in xyz123 * lichess.org"
+var tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
+var tvTitlePageRE = new RegExp('.*/tv$');
+
 // ---------- Seek list ----------
 
 function observeLobbyBox(mutations) {
@@ -173,6 +177,15 @@ function hideRatingsInMiniGame(node) {
 }
 
 new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true});
+
+// ---------- TV title ----------
+
+if (tvTitlePageRE.test(location.href)) {
+  var match = tvTitleRE.exec(document.title);
+  if (match) {
+    document.title = match[1] + ' - ' + match[3] + ' ' + match[5];
+  }
+}
 
 // ---------- Toggle on/off ----------
 
