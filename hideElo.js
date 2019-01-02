@@ -18,8 +18,8 @@
 
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
-// Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)".
-var titleNameRating = '(W?[A-Z]M\\s+)?(\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
+// Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)" or "BOT foobar (3333)".
+var titleNameRating = '(([A-Z]{2,}\\s+)?(\\S+))\\s+(\\([123]?\\d{3}\\??\\))';
 
 // Matches a plain rating, like "666" or "2345".
 var ratingRE = /[123]?\d{3}\??/;
@@ -107,7 +107,6 @@ function hideRatingsInLeftSidebox(players) {
 function createSeparator() {
   var nbsp = document.createTextNode('\u00A0');
   var span = document.createElement('span');
-  span.classList.add('hide_elo_separator');
   span.appendChild(nbsp);
   return span;
 }
@@ -133,10 +132,10 @@ function observeTooltip(mutations) {
     mutation.addedNodes.forEach(function(node) {
       if (typeof node.matches === 'function') {
         if (node.matches('#powerTip div.game_legend')) {
-          hideRatingsInTooltipGame(node);
-        } else if (node.matches('div#miniGame a.mini_board')) {
+          hideRatingsInTooltipGameLegend(node);
+        } else if (node.matches('#miniGame a.mini_board') || node.matches('#powerTip a.mini_board')) {
           hideRatingsInMetaTooltip(node);
-        } else if (node.matches('div#miniGame div.vstext.clearfix')) {
+        } else if (node.matches('#miniGame div.vstext.clearfix')) {
           hideRatingsInMiniGame(node);
         }
       }
@@ -144,17 +143,18 @@ function observeTooltip(mutations) {
   });
 }
 
-function hideRatingsInTooltipGame(node) {
+function hideRatingsInTooltipGameLegend(node) {
   var match = tooltipGameLegendRE.exec(node.textContent);
   if (match) {
-    node.textContent = match[2] + ' ' + match[4];
+    node.textContent = match[1] + ' ' + match[5];
   }
 }
 
 function hideRatingsInMetaTooltip(node) {
   var match = tooltipGameTitleRE.exec(node.title);
+  console.log(match);
   if (match) {
-    node.title = match[2] + ' vs ' + match[5] + ' ' + match[7];
+    node.title = match[1] + ' vs ' + match[5] + ' ' + match[9];
   }
 }
 

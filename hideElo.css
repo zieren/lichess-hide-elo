@@ -24,15 +24,6 @@ div.advice_summary a.user_link .rp
 	visibility: hidden;
 }
 
-/* Ingame box on the left: chess title (IM etc.) */
-.side_box .players .player a.user_link .title,
-.side_box .players .player a.user_link .hide_elo_separator,
-/* Tooltip over player name: title */
-#powerTip .user_link .title
-{
-	display: none;
-}
-
 /* Prevent player links in the left ingame side box from flashing with ratings
  * *while* the page is loading and before the content script runs at document_end.
  * This is reversed by the content script using .elo_hidden (see below). */
@@ -56,11 +47,4 @@ body.no_hide_elo #powerTip .user_link .rp,
 body.no_hide_elo div.advice_summary a.user_link .rp
 {
 	visibility: visible;
-}
-
-body.no_hide_elo .side_box .players .player a.user_link .title,
-body.no_hide_elo .side_box .players .player a.user_link .hide_elo_separator,
-body.no_hide_elo #powerTip .user_link .title
-{
-	display: initial;
 }
