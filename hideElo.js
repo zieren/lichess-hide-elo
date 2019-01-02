@@ -19,7 +19,7 @@
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
 // Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)" or "BOT foobar (3333)".
-var titleNameRating = '(([A-Z]{2,}\\s+)?(\\S+))\\s+(\\([123]?\\d{3}\\??\\))';
+var titleNameRating = '((?:[A-Z]{2,}\\s+)?\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
 
 // Matches a plain rating, like "666" or "2345".
 var ratingRE = /[123]?\d{3}\??/;
@@ -146,31 +146,33 @@ function observeTooltip(mutations) {
 function hideRatingsInTooltipGameLegend(node) {
   var match = tooltipGameLegendRE.exec(node.textContent);
   if (match) {
-    node.textContent = match[1] + ' ' + match[5];
+    node.textContent = match[1] + ' ' + match[3];
   }
 }
 
 function hideRatingsInMetaTooltip(node) {
   var match = tooltipGameTitleRE.exec(node.title);
-  console.log(match);
   if (match) {
-    node.title = match[1] + ' vs ' + match[5] + ' ' + match[9];
+    node.title = match[1] + ' vs ' + match[3] + ' ' + match[5];
   }
 }
 
 function hideRatingsInMiniGame(node) {
   if (typeof node.querySelectorAll === 'function') {
-    var players = node.querySelectorAll('div.user_link');
-    players.forEach(function(player) {
-      // First child is the <br>, next come title and rating.
-      while (player.childNodes.length > 1) {
-        player.childNodes[player.childNodes.length - 1].remove();
-      }
-    });
+    var playerLeft = node.querySelector('div.left.user_link');
+    var playerRight = node.querySelector('div.right.user_link');
+    if (playerLeft) {
+      // Rating is the last node.
+      playerLeft.childNodes[playerLeft.childNodes.length - 1].remove();
+    }
+    if (playerRight) {
+      // Rating is at index 2, possibly followed by a title.
+      playerRight.childNodes[2].remove();
+    }
   }
 }
 
-new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true });
+new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true});
 
 // ---------- Toggle on/off ----------
 
