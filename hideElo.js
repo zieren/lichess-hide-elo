@@ -180,21 +180,25 @@ new MutationObserver(observeTooltip).observe(document, {childList: true, subtree
 
 // ---------- TV title ----------
 
+var originalTitle = document.title;
+var hiddenTitle = document.title;
 if (tvTitlePageRE.test(location.href)) {
   var match = tvTitleRE.exec(document.title);
   if (match) {
-    document.title = match[1] + ' - ' + match[3] + ' ' + match[5];
+    hiddenTitle = match[1] + ' - ' + match[3] + ' ' + match[5];
   }
 }
 
 // ---------- Toggle on/off ----------
 
-function setStyles() {
+function doTheThing() {
   var skipPage = skipPageRE.test(location.href);
   if (enabled && !skipPage) {
     document.body.classList.remove('no_hide_elo');
+    document.title = hiddenTitle;
   } else {
     document.body.classList.add('no_hide_elo');
+    document.title = originalTitle;
   }
 }
 
@@ -206,7 +210,7 @@ browser.runtime.onMessage.addListener(message => {
     enabled = !enabled;
   }
   storeEnabledState();
-  setStyles();
+  doTheThing();
   setIconState();
 });
 
@@ -230,12 +234,12 @@ if (enabled === null) {
       enabled = false;
     }
     storeEnabledState();
-    setStyles();
+    doTheThing();
     setIconState();
   });
 } else {
   // Session storage uses Strings.
   enabled = enabled === 'true';
-  setStyles();
+  doTheThing();
   setIconState();
 }
