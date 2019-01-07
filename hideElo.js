@@ -3,17 +3,12 @@
  *
  * This works in three steps:
  *
- * 1. At document_start, inject CSS to hide all elements containing ratings. This will fully hide
- *    some elements also containing player names, which should not be hidden, i.e. it will hide a
- *    superset. This will be fixed in step 3.
- * 2. At document_end, register a MutationObserver to handle the seek list. This is dynamically
- *    populated and initially empty, so the observer is active in time.
- * 3. Also at document_end, find the player names hidden in step 1 and separate them from the
- *    ratings, in a class that makes them always visible.
+ * 1. At document_start, inject CSS to hide ratings already while the page is loading. At this point
+ *    we need to hide a superset because some ratings are not isolated in the DOM tree.
+ * 2. At document_end, make some static changes to the DOM tree to isolate ratings.
+ * 3. Register MutationObserver-s to handle dynamic elements, such as the seek list and tool tips.
  *
- * So we initially hide a superset to make sure ratings don't even flash up briefly until the
- * script has finished running. When all classes are modified as needed, ratings can be shown/
- * hidden by adding/removing the no_hide_elo class to/from the body.
+ * Now we can toggle the visibility of the isolated/tagged elements containing ratings via CSS.
  */
 
 var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
