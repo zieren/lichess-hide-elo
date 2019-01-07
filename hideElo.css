@@ -1,8 +1,3 @@
-/*
- * Hide ratings everywhere. Using Lichess default styles so ratings don't flash
- * *while* the page is loading.
- */
-
 /* Ingame box on the right: rating */
 .username rating,
 /* Ingame box on the right: rating change */
@@ -11,8 +6,6 @@
 #powerTip .ratings,
 /* Elo change in left side box */
 .side_box .players .player .rp,
-/* Elo in seek list. */
-div.lobby_box td.hide_elo,
 /* Ingame box on the left: rating */
 .side_box .players .player a.user_link .hide_elo,
 /* Tooltip over player name *while* loading. */
@@ -45,6 +38,12 @@ div#hooks_wrap div.lichess_overboard.game_config div.ratings
 	visibility: hidden;
 }
 
+/* Elo in seek list. Other methods don't preserve the cell background. */
+div.lobby_box td.hide_elo
+{
+	font-size: 0;
+}
+
 /* Profile page: mouse hover */
 div.rating_history
 {
@@ -59,7 +58,6 @@ body.no_hide_elo #powerTip .ratings,
 body.no_hide_elo .side_box .players .player .rp,
 body.no_hide_elo .side_box .players .player a.user_link,
 .side_box .players .player a.user_link.elo_hidden,
-body.no_hide_elo div.lobby_box td.hide_elo,
 body.no_hide_elo .side_box .players .player a.user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .rp,
@@ -74,6 +72,11 @@ body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hi
 body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings
 {
 	visibility: visible;
+}
+
+body.no_hide_elo div.lobby_box td.hide_elo
+{
+	font-size: 100%;
 }
 
 body.no_hide_elo div.rating_history
