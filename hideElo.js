@@ -191,6 +191,19 @@ if (tvTitlePageRE.test(location.href)) {
 
 // ---------- Challenge (incoming) ----------
 
+function observeIncomingChallenge(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      if (typeof node.querySelector === 'function') {
+        var name = node.querySelector('div.challenges a.user_link name');
+        if (name) {
+          hideRatingsInIncomingChallenge(name);
+        }
+      }
+    });
+  });
+}
+
 function hideRatingsInIncomingChallenge(name) {
   console.log(name);
   var match = challengeNameRE.exec(name.textContent);
@@ -204,19 +217,6 @@ function hideRatingsInIncomingChallenge(name) {
     name.appendChild(rating);
     name.appendChild(createSeparator());
   }
-}
-
-function observeIncomingChallenge(mutations) {
-  mutations.forEach(function(mutation) {
-    mutation.addedNodes.forEach(function(node) {
-      if (typeof node.querySelector === 'function') {
-        var name = node.querySelector('div.challenges a.user_link name');
-        if (name) {
-          hideRatingsInIncomingChallenge(name);
-        }
-      }
-    });
-  });
 }
 
 var challengeNotifications = document.querySelector('div#top div.challenge_notifications');
