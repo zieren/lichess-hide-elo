@@ -19,7 +19,11 @@ div.lobby_box td.hide_elo,
 #powerTip .user_link .hide_elo,
 #powerTip .user_link .rp,
 /* Analysis board: rating change */
-div.advice_summary a.user_link .rp
+div.advice_summary a.user_link .rp,
+/* Profile page: Activity */
+div.user_show div.activity div.entry rating,
+/* Profile page: Games */
+div.user_show div.game_row div.infos div.versus div.player
 {
 	visibility: hidden;
 }
@@ -44,7 +48,10 @@ body.no_hide_elo div.lobby_box td.hide_elo,
 body.no_hide_elo .side_box .players .player a.user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .hide_elo,
 body.no_hide_elo #powerTip .user_link .rp,
-body.no_hide_elo div.advice_summary a.user_link .rp
+body.no_hide_elo div.advice_summary a.user_link .rp,
+body.no_hide_elo div.user_show div.activity div.entry rating,
+body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
+div.user_show div.game_row div.infos div.versus div.player a.user_link
 {
 	visibility: visible;
 }
