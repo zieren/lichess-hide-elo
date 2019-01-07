@@ -28,9 +28,21 @@ var tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
 // Matches the tooltip of the #powerTip, e.g. "GM foobar (2500) vs baz (1500?) • 15+15".
 var tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
 
+// Matches name and rating in an incoming challenge.
+// Caveat: I don't know what a challenge from a titled player looks like :-)
+var challengeNameRE = new RegExp(titleNameRating);
+
 // Matches the TV title, e.g. "foo (1234) - bar (2345) in xyz123 * lichess.org"
 var tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
 var tvTitlePageRE = new RegExp('.*/tv$');
+
+// Replace the &nbsp; Lichess sometimes puts between name and rating.
+function createSeparator() {
+  var nbsp = document.createTextNode('\u00A0');
+  var span = document.createElement('span');
+  span.appendChild(nbsp);
+  return span;
+}
 
 // ---------- Seek list ----------
 
@@ -101,13 +113,6 @@ function hideRatingsInLeftSidebox(players) {
       player.classList.add('elo_hidden');
     }
   });
-}
-
-function createSeparator() {
-  var nbsp = document.createTextNode('\u00A0');
-  var span = document.createElement('span');
-  span.appendChild(nbsp);
-  return span;
 }
 
 var boardLeft = document.querySelector('div.board_left');
@@ -182,6 +187,41 @@ if (tvTitlePageRE.test(location.href)) {
   if (match) {
     hiddenTitle = match[1] + ' - ' + match[3] + ' ' + match[5];
   }
+}
+
+// ---------- Challenge (incoming) ----------
+
+function hideRatingsInIncomingChallenge(name) {
+  console.log(name);
+  var match = challengeNameRE.exec(name.textContent);
+  console.log(match);
+  if (match) {
+    name.textContent = match[1];
+    name.appendChild(createSeparator());
+    var rating = document.createElement('span');
+    rating.textContent = match[2];
+    rating.classList.add('hide_elo');
+    name.appendChild(rating);
+    name.appendChild(createSeparator());
+  }
+}
+
+function observeIncomingChallenge(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      if (typeof node.querySelector === 'function') {
+        var name = node.querySelector('div.challenges a.user_link name');
+        if (name) {
+          hideRatingsInIncomingChallenge(name);
+        }
+      }
+    });
+  });
+}
+
+var challengeNotifications = document.querySelector('div#top div.challenge_notifications');
+if (challengeNotifications) {
+  new MutationObserver(observeIncomingChallenge).observe(challengeNotifications, {childList: true, subtree: true});
 }
 
 // ---------- Toggle on/off ----------

@@ -28,7 +28,9 @@ div.user_show div.game_row div.infos div.versus div.player,
 div.sub_ratings span.rating,
 div.sub_ratings span.rank,
 /* Profile page: graphical ratings */
-div.rating_history
+div.rating_history,
+/* Challenge */
+div.challenge_notifications div.challenges a.user_link name .hide_elo
 {
 	visibility: hidden;
 }
@@ -65,7 +67,8 @@ body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
 div.user_show div.game_row div.infos div.versus div.player a.user_link,
 body.no_hide_elo div.sub_ratings span.rating,
 body.no_hide_elo div.sub_ratings span.rank,
-body.no_hide_elo div.rating_history
+body.no_hide_elo div.rating_history,
+body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo
 {
 	visibility: visible;
 }
