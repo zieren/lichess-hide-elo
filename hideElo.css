@@ -23,7 +23,12 @@ div.advice_summary a.user_link .rp,
 /* Profile page: Activity */
 div.user_show div.activity div.entry rating,
 /* Profile page: Games */
-div.user_show div.game_row div.infos div.versus div.player
+div.user_show div.game_row div.infos div.versus div.player,
+/* Profile page: textual ratings */
+div.sub_ratings span.rating,
+div.sub_ratings span.rank,
+/* Profile page: graphical ratings */
+div.rating_history
 {
 	visibility: hidden;
 }
@@ -34,6 +39,12 @@ div.user_show div.game_row div.infos div.versus div.player
 .side_box .players .player a.user_link
 {
 	visibility: hidden;
+}
+
+/* Profile page: mouse hover */
+div.rating_history
+{
+	pointer-events: none;
 }
 
 /* Show ratings when extension is off. */
@@ -51,7 +62,15 @@ body.no_hide_elo #powerTip .user_link .rp,
 body.no_hide_elo div.advice_summary a.user_link .rp,
 body.no_hide_elo div.user_show div.activity div.entry rating,
 body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
-div.user_show div.game_row div.infos div.versus div.player a.user_link
+div.user_show div.game_row div.infos div.versus div.player a.user_link,
+body.no_hide_elo div.sub_ratings span.rating,
+body.no_hide_elo div.sub_ratings span.rank,
+body.no_hide_elo div.rating_history
 {
 	visibility: visible;
+}
+
+body.no_hide_elo div.rating_history
+{
+	pointer-events: auto;
 }
