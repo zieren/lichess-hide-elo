@@ -25,7 +25,9 @@ div.rating_history,
 /* Challenge: incoming */
 div.challenge_notifications div.challenges a.user_link name .hide_elo,
 /* Challenge: outgoing */
-div#hooks_wrap div.lichess_overboard.game_config div.ratings
+div#hooks_wrap div.lichess_overboard.game_config div.ratings,
+/* Analysis board: PGN */
+div.analysis_panels div.panel.fen_pgn div.pgn
 {
 	visibility: hidden;
 }
@@ -69,7 +71,8 @@ body.no_hide_elo div.sub_ratings span.rating,
 body.no_hide_elo div.sub_ratings span.rank,
 body.no_hide_elo div.rating_history,
 body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo,
-body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings
+body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings,
+div.analysis_panels div.panel.fen_pgn div.pgn.elo_hidden
 {
 	visibility: visible;
 }

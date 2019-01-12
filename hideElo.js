@@ -36,6 +36,9 @@ var challengeNameRE = new RegExp(titleNameRating);
 var tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
 var tvTitlePageRE = new RegExp('.*/tv$');
 
+// Matches ratings in the PGN.
+var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff).*\]\n/g;
+
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
 function createSeparator() {
   var nbsp = document.createTextNode('\u00A0');
@@ -224,6 +227,18 @@ if (challengeNotifications) {
   new MutationObserver(observeIncomingChallenge).observe(challengeNotifications, {childList: true, subtree: true});
 }
 
+// ---------- Analysis board: PGN ----------
+
+var pgn = document.querySelector('div.analysis_panels div.panel.fen_pgn div.pgn');
+var originalPgn;
+var hiddenPgn;
+if (pgn) {
+  originalPgn = pgn.textContent;
+  hiddenPgn = originalPgn.replace(pgnRatingsRE, '');
+  pgn.textContent = hiddenPgn;
+  pgn.classList.add('elo_hidden');
+}
+
 // ---------- Toggle on/off ----------
 
 function doTheThing() {
@@ -231,9 +246,11 @@ function doTheThing() {
   if (enabled && !skipPage) {
     document.body.classList.remove('no_hide_elo');
     document.title = hiddenTitle;
+    if (pgn) pgn.textContent = hiddenPgn;
   } else {
     document.body.classList.add('no_hide_elo');
     document.title = originalTitle;
+    if (pgn) pgn.textContent = originalPgn;
   }
 }
 
