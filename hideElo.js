@@ -37,7 +37,7 @@ var tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\
 var tvTitlePageRE = new RegExp('.*/tv$');
 
 // Matches ratings in the PGN.
-var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff).*\]\n/g;
+var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
 
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
 function createSeparator() {
