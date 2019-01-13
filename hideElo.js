@@ -39,6 +39,12 @@ var tvTitlePageRE = new RegExp('.*/tv$');
 // Matches ratings in the PGN.
 var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
 
+// Chess960 tag in the PGN.
+var chess960RE = /\[Variant\s*"Chess960"\]/;
+
+// FEN tag in the PGN (initial position).
+var fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]/;
+
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
 function createSeparator() {
   var nbsp = document.createTextNode('\u00A0');
@@ -237,6 +243,24 @@ if (pgn) {
   hiddenPgn = originalPgn.replace(pgnRatingsRE, '');
   pgn.textContent = hiddenPgn;
   pgn.classList.add('elo_hidden');
+
+  // And now for our surprise feature :-)
+  if (chess960RE.test(hiddenPgn)) {
+    browser.storage.sync.get('convertFen').then(result => {
+      if (result.convertFen) {  // default (undefined) maps to false
+        var match = fenRE.exec(hiddenPgn);
+        if (match) {
+          if (match[2].toUpperCase() === match[3]) {
+            var leftRookBlack = match[2].indexOf('r');
+            var rightRookBlack = match[2].indexOf('r', leftRookBlack + 1);
+            var rookFiles = String.fromCharCode('a'.charCodeAt(0) + rightRookBlack, 'a'.charCodeAt(0) + leftRookBlack);
+            hiddenPgn = hiddenPgn.replace(fenRE, '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]');
+            doTheThing();
+          }
+        }
+      }
+    });
+  }
 }
 
 // ---------- Toggle on/off ----------
@@ -270,7 +294,7 @@ function setIconState() {
   browser.runtime.sendMessage({operation: enabled ? 'setIconOn' : 'setIconOff'});
 }
 
-// ---------- Store/retrieve enabled state ----------
+// ---------- Store/retrieve enabled state and options ----------
 
 function storeEnabledState() {
   sessionStorage.setItem('enabled', enabled);
@@ -281,10 +305,7 @@ var enabled = sessionStorage.getItem('enabled');
 if (enabled === null) {
   // Use default from sync storage. This uses actual booleans.
   browser.storage.sync.get('defaultEnabled').then(result => {
-    enabled = result.defaultEnabled;
-    if (enabled === undefined) {
-      enabled = false;
-    }
+    enabled = result.defaultEnabled === undefined || result.defaultEnabled;
     storeEnabledState();
     doTheThing();
     setIconState();
