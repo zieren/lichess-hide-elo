@@ -13,7 +13,6 @@ var restoreOptions = function(event) {
     document.getElementById('defaultEnabled').checked = result.defaultEnabled === undefined || result.defaultEnabled;
     // Map undefined to false for suprising but thoroughly pleasant side effect.
     document.getElementById('convertFen').checked = Boolean(result.convertFen);
-    alert(JSON.stringify(result));
   });
 };
 

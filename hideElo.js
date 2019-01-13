@@ -214,9 +214,7 @@ function observeIncomingChallenge(mutations) {
 }
 
 function hideRatingsInIncomingChallenge(name) {
-  console.log(name);
   var match = challengeNameRE.exec(name.textContent);
-  console.log(match);
   if (match) {
     name.textContent = match[1];
     name.appendChild(createSeparator());
