@@ -252,7 +252,9 @@ if (pgn) {
             var leftRookBlack = match[2].indexOf('r');
             var rightRookBlack = match[2].indexOf('r', leftRookBlack + 1);
             var rookFiles = String.fromCharCode('a'.charCodeAt(0) + rightRookBlack, 'a'.charCodeAt(0) + leftRookBlack);
-            hiddenPgn = hiddenPgn.replace(fenRE, '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]');
+            var sFen = '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]';
+            hiddenPgn = hiddenPgn.replace(fenRE, sFen);
+            originalPgn = originalPgn.replace(fenRE, sFen);
             doTheThing();
           }
         }
