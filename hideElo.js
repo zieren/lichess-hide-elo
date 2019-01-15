@@ -11,39 +11,54 @@
  * Now we can toggle the visibility of the isolated/tagged elements containing ratings via CSS.
  */
 
-var skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
+// ---------- Options ----------
+
+// Try to read options from session storage. This initially returns null.
+
+// Convert FEN to Shredder-FEN.
+var convertFen = sessionStorage.getItem('convertFen') === 'true';
+// Hide ratings on the current tab.
+const enabledInSession = sessionStorage.getItem('enabled');
+var enabled = enabledInSession === 'true' || enabledInSession === null;
+
+// ---------- Regular expressions ----------
+
+// Pages on which the extension should always be disabled.
+const skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 
 // Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)" or "BOT foobar (3333)".
-var titleNameRating = '((?:[A-Z]{2,}\\s+)?\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
+const titleNameRating = '((?:[A-Z]{2,}\\s+)?\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
 
 // Matches a plain rating, like "666" or "2345".
-var ratingRE = /[123]?\d{3}\??/;
+const ratingRE = /[123]?\d{3}\??/;
 
 // Matches name and rating in the left sidebox, e.g. "foobar (1500?)".
-var leftSideboxNameRatingRE = /(\S*)\s+(\([123]?\d{3}\??\))/;
+const leftSideboxNameRatingRE = /(\S*)\s+(\([123]?\d{3}\??\))/;
 
 // Matches the legend shown below a game in the #powerTip, e.g. "IM foobar (2400) • 1+0".
-var tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
+const tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
 
 // Matches the tooltip of the #powerTip, e.g. "GM foobar (2500) vs baz (1500?) • 15+15".
-var tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
+const tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
 
 // Matches name and rating in an incoming challenge.
 // Caveat: I don't know what a challenge from a titled player looks like :-)
-var challengeNameRE = new RegExp(titleNameRating);
+const challengeNameRE = new RegExp(titleNameRating);
 
 // Matches the TV title, e.g. "foo (1234) - bar (2345) in xyz123 * lichess.org"
-var tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
-var tvTitlePageRE = new RegExp('.*/tv$');
+const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
+const tvTitlePageRE = new RegExp('.*/tv$');
 
 // Matches ratings in the PGN.
-var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
+const pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
 
 // Chess960 tag in the PGN.
-var chess960RE = /\[Variant\s*"Chess960"\]/;
+const chess960RE = /\[Variant\s*"Chess960"\]/;
 
 // FEN tag in the PGN (initial position).
-var fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]\n/;
+const fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]\n/;
+
+// ---------- Helpers ----------
 
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
 function createSeparator() {
@@ -267,10 +282,6 @@ if (pgn) {
 // ---------- Analysis board: linked PGN ----------
 
 function interceptPgnDownload(event) {
-  if (typeof enabled !== 'boolean') {
-    // Options were not yet initialized. Swallow the click instead of possibly bypassing the filtering.
-    return false;
-  }
   if (!enabled && !convertFen) {
     return true;  // continue normally to href
   }
@@ -341,11 +352,7 @@ function storeOptionsForSession() {
   sessionStorage.setItem('enabled', enabled);
 }
 
-// FEN conversion is only configured in the options.
-var convertFen = sessionStorage.getItem('convertFen') === 'true';
-// Whether the extension is enabled on the current tab.
-var enabled = sessionStorage.getItem('enabled');
-if (enabled === null) {  // indicates session start
+if (enabledInSession === null) {  // indicates session start
   // Read options from sync storage. This uses actual booleans.
   browser.storage.sync.get(['defaultEnabled', 'convertFen']).then(options => {
     convertFen = !!options.convertFen;
