@@ -259,6 +259,7 @@ var hiddenPgn;
 if (pgn) {
   originalPgn = pgn.textContent;
   hiddenPgn = pgn.textContent.replace(pgnRatingsRE, '');
+  // Hide ratings until we read the options, then doTheThing() will pick the correct pgn.
   pgn.textContent = hiddenPgn;
   pgn.classList.add('elo_hidden');
 }
