@@ -15,9 +15,9 @@
 
 // Try to read options from session storage. This initially returns null, then 'true'/'false'.
 
-// Convert FEN to Shredder-FEN.
+// Convert FEN to Shredder-FEN. Default to false.
 var convertFen = sessionStorage.getItem('convertFen') === 'true';
-// Hide ratings on the current tab.
+// Hide ratings on the current tab. Default to true.
 const enabledInSession = sessionStorage.getItem('enabled');
 var enabled = enabledInSession === 'true' || enabledInSession === null;
 
@@ -248,8 +248,8 @@ if (challengeNotifications) {
 
 // ---------- FEN->Shredder-FEN conversion ----------
 
-function maybeConvertFen() {
-  if (convertFen && chess960RE.test(hiddenPgn)) {
+function convertFenIfChess960() {
+  if (chess960RE.test(hiddenPgn)) {
     hiddenPgn = doConvertFen(hiddenPgn);
     originalPgn = doConvertFen(originalPgn);
   }
@@ -358,12 +358,22 @@ if (enabledInSession === null) {  // indicates session start
     convertFen = !!options.convertFen;
     enabled = options.defaultEnabled === undefined || options.defaultEnabled;
     storeOptionsForSession();
-    maybeConvertFen();
+    if (convertFen) convertFenIfChess960();
     doTheThing();
     setIconState();
   });
 } else {
-  maybeConvertFen();
   doTheThing();
   setIconState();
+  // Pick up changes to the convertFen option.
+  browser.storage.sync.get('convertFen').then(options => {
+    convertFen = !!options.convertFen;
+    sessionStorage.setItem('convertFen', convertFen);
+    if (convertFen) {
+      convertFenIfChess960();
+      doTheThing();
+    }
+  });
 }
+
+// XXX Eventually test first run experience again.
