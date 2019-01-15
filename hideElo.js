@@ -233,7 +233,14 @@ if (challengeNotifications) {
 
 // ---------- FEN->Shredder-FEN conversion ----------
 
-function convertFen(pgn) {
+function maybeConvertFen() {
+  if (convertFen && chess960RE.test(hiddenPgn)) {
+    hiddenPgn = doConvertFen(hiddenPgn);
+    originalPgn = doConvertFen(originalPgn);
+  }
+}
+
+function doConvertFen(pgn) {
   var match = fenRE.exec(pgn);
   if (match && match[2].toUpperCase() === match[3]) {
     var leftRookBlack = match[2].indexOf('r');
@@ -254,23 +261,16 @@ if (pgn) {
   hiddenPgn = pgn.textContent.replace(pgnRatingsRE, '');
   pgn.textContent = hiddenPgn;
   pgn.classList.add('elo_hidden');
-
-//  // And now for our surprise feature :-)
-//  if (chess960RE.test(hiddenPgn)) {
-//    browser.storage.sync.get('convertFen').then(result => {
-//      if (result.convertFen) {  // default (undefined) maps to false
-//        hiddenPgn = convertFen(hiddenPgn);
-//        originalPgn = convertFen(originalPgn);
-//        doTheThing();
-//      }
-//    });
-//  }
 }
 
 // ---------- Analysis board: linked PGN ----------
 
 function interceptPgnDownload(event) {
-  if (!enabled) {  // XXX not for FEN conversion
+  if (typeof enabled !== 'boolean') {
+    // Options were not yet initialized. Swallow the click instead of possibly bypassing the filtering.
+    return false;
+  }
+  if (!enabled && !convertFen) {
     return true;  // continue normally to href
   }
   var request = new XMLHttpRequest();
@@ -280,9 +280,8 @@ function interceptPgnDownload(event) {
       var contentDisposition = request.getResponseHeader('content-disposition');
       var match = contentDispositionFilenameRE.exec(contentDisposition);
       var filename = match ? match[1] : 'file.pgn';
-      var pgnFile = request.responseText.replace(pgnRatingsRE, '');
-
-
+      var pgnFile = enabled ? request.responseText.replace(pgnRatingsRE, '') : request.responseText;
+      if (convertFen) pgnFile = doConvertFen(pgnFile);
       var dummyA = document.createElement('a');
       var contentType = request.getResponseHeader('content-type') || 'application/x-chess-pgn';
       dummyA.setAttribute('href', 'data:' + contentType + ',' + encodeURIComponent(pgnFile));
@@ -347,27 +346,18 @@ var convertFen = sessionStorage.getItem('convertFen') === 'true';
 var enabled = sessionStorage.getItem('enabled');
 if (enabled === null) {  // indicates session start
   // Read options from sync storage. This uses actual booleans.
-  browser.storage.sync.get(['defaultEnabled', 'convertFen']).then(result => {
-    convertFen = !!result.convertFen;
-    enabled = result.defaultEnabled === undefined || result.defaultEnabled;
+  browser.storage.sync.get(['defaultEnabled', 'convertFen']).then(options => {
+    convertFen = !!options.convertFen;
+    enabled = options.defaultEnabled === undefined || options.defaultEnabled;
     storeOptionsForSession();
-
-    if (convertFen && chess960RE.test(hiddenPgn)) {
-      hiddenPgn = convertFen(hiddenPgn);
-      originalPgn = convertFen(originalPgn);
-    }
-
+    maybeConvertFen();
     doTheThing();
     setIconState();
   });
 } else {
   // Session storage uses Strings.
   enabled = enabled === 'true';
-  // XXX extract to function
-  if (convertFen && chess960RE.test(hiddenPgn)) {
-    hiddenPgn = convertFen(hiddenPgn);
-    originalPgn = convertFen(originalPgn);
-  }
+  maybeConvertFen();
   doTheThing();
   setIconState();
 }
