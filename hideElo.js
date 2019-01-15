@@ -13,7 +13,7 @@
 
 // ---------- Options ----------
 
-// Try to read options from session storage. This initially returns null.
+// Try to read options from session storage. This initially returns null, then 'true'/'false'.
 
 // Convert FEN to Shredder-FEN.
 var convertFen = sessionStorage.getItem('convertFen') === 'true';
@@ -363,8 +363,6 @@ if (enabledInSession === null) {  // indicates session start
     setIconState();
   });
 } else {
-  // Session storage uses Strings.
-  enabled = enabled === 'true';
   maybeConvertFen();
   doTheThing();
   setIconState();
