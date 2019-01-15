@@ -43,7 +43,7 @@ var pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\
 var chess960RE = /\[Variant\s*"Chess960"\]/;
 
 // FEN tag in the PGN (initial position).
-var fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]/;
+var fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]\n/;
 
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
 function createSeparator() {
@@ -231,37 +231,77 @@ if (challengeNotifications) {
   new MutationObserver(observeIncomingChallenge).observe(challengeNotifications, {childList: true, subtree: true});
 }
 
-// ---------- Analysis board: PGN ----------
+// ---------- FEN->Shredder-FEN conversion ----------
+
+function convertFen(pgn) {
+  var match = fenRE.exec(pgn);
+  if (match && match[2].toUpperCase() === match[3]) {
+    var leftRookBlack = match[2].indexOf('r');
+    var rightRookBlack = match[2].indexOf('r', leftRookBlack + 1);
+    var rookFiles = String.fromCharCode('a'.charCodeAt(0) + rightRookBlack, 'a'.charCodeAt(0) + leftRookBlack);
+    return pgn.replace(fenRE, '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]');
+  }
+  return pgn;
+}
+
+// ---------- Analysis board: embedded PGN ----------
 
 var pgn = document.querySelector('div.analysis_panels div.panel.fen_pgn div.pgn');
 var originalPgn;
 var hiddenPgn;
 if (pgn) {
   originalPgn = pgn.textContent;
-  hiddenPgn = originalPgn.replace(pgnRatingsRE, '');
+  hiddenPgn = pgn.textContent.replace(pgnRatingsRE, '');
   pgn.textContent = hiddenPgn;
   pgn.classList.add('elo_hidden');
 
-  // And now for our surprise feature :-)
-  if (chess960RE.test(hiddenPgn)) {
-    browser.storage.sync.get('convertFen').then(result => {
-      if (result.convertFen) {  // default (undefined) maps to false
-        var match = fenRE.exec(hiddenPgn);
-        if (match) {
-          if (match[2].toUpperCase() === match[3]) {
-            var leftRookBlack = match[2].indexOf('r');
-            var rightRookBlack = match[2].indexOf('r', leftRookBlack + 1);
-            var rookFiles = String.fromCharCode('a'.charCodeAt(0) + rightRookBlack, 'a'.charCodeAt(0) + leftRookBlack);
-            var sFen = '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]';
-            hiddenPgn = hiddenPgn.replace(fenRE, sFen);
-            originalPgn = originalPgn.replace(fenRE, sFen);
-            doTheThing();
-          }
-        }
-      }
-    });
-  }
+//  // And now for our surprise feature :-)
+//  if (chess960RE.test(hiddenPgn)) {
+//    browser.storage.sync.get('convertFen').then(result => {
+//      if (result.convertFen) {  // default (undefined) maps to false
+//        hiddenPgn = convertFen(hiddenPgn);
+//        originalPgn = convertFen(originalPgn);
+//        doTheThing();
+//      }
+//    });
+//  }
 }
+
+// ---------- Analysis board: linked PGN ----------
+
+function interceptPgnDownload(event) {
+  if (!enabled) {  // XXX not for FEN conversion
+    return true;  // continue normally to href
+  }
+  var request = new XMLHttpRequest();
+  request.onreadystatechange = function() {
+    if (request.readyState == 4 && request.status == 200) {
+      var contentDispositionFilenameRE = /\bfilename=((?:"[^"]+\.pgn")|(?:\S+\.pgn))/;
+      var contentDisposition = request.getResponseHeader('content-disposition');
+      var match = contentDispositionFilenameRE.exec(contentDisposition);
+      var filename = match ? match[1] : 'file.pgn';
+      var pgnFile = request.responseText.replace(pgnRatingsRE, '');
+
+
+      var dummyA = document.createElement('a');
+      var contentType = request.getResponseHeader('content-type') || 'application/x-chess-pgn';
+      dummyA.setAttribute('href', 'data:' + contentType + ',' + encodeURIComponent(pgnFile));
+      dummyA.setAttribute('download', filename);
+      dummyA.style.display = 'none';
+      document.body.appendChild(dummyA);
+      dummyA.click();
+      document.body.removeChild(dummyA);
+    }
+  }
+  request.open('GET', event.srcElement.href, true);
+  request.send();
+  return false;  // skip the href
+}
+
+var pgnLinks = document.querySelectorAll('div.analysis_panels div.panel.fen_pgn div.pgn_options a:not(.embed_howto)');
+pgnLinks.forEach(function(a) {
+  a.onclick = interceptPgnDownload;
+});
 
 // ---------- Toggle on/off ----------
 
@@ -285,7 +325,7 @@ browser.runtime.onMessage.addListener(message => {
   if (message.operation == 'iconClicked') {
     enabled = !enabled;
   }
-  storeEnabledState();
+  storeOptionsForSession();
   doTheThing();
   setIconState();
 });
@@ -296,23 +336,38 @@ function setIconState() {
 
 // ---------- Store/retrieve enabled state and options ----------
 
-function storeEnabledState() {
+function storeOptionsForSession() {
+  sessionStorage.setItem('convertFen', convertFen);
   sessionStorage.setItem('enabled', enabled);
 }
 
+// FEN conversion is only configured in the options.
+var convertFen = sessionStorage.getItem('convertFen') === 'true';
 // Whether the extension is enabled on the current tab.
 var enabled = sessionStorage.getItem('enabled');
-if (enabled === null) {
-  // Use default from sync storage. This uses actual booleans.
-  browser.storage.sync.get('defaultEnabled').then(result => {
+if (enabled === null) {  // indicates session start
+  // Read options from sync storage. This uses actual booleans.
+  browser.storage.sync.get(['defaultEnabled', 'convertFen']).then(result => {
+    convertFen = !!result.convertFen;
     enabled = result.defaultEnabled === undefined || result.defaultEnabled;
-    storeEnabledState();
+    storeOptionsForSession();
+
+    if (convertFen && chess960RE.test(hiddenPgn)) {
+      hiddenPgn = convertFen(hiddenPgn);
+      originalPgn = convertFen(originalPgn);
+    }
+
     doTheThing();
     setIconState();
   });
 } else {
   // Session storage uses Strings.
   enabled = enabled === 'true';
+  // XXX extract to function
+  if (convertFen && chess960RE.test(hiddenPgn)) {
+    hiddenPgn = convertFen(hiddenPgn);
+    originalPgn = convertFen(originalPgn);
+  }
   doTheThing();
   setIconState();
 }
