@@ -261,7 +261,7 @@ function doConvertFen(pgn) {
     var leftRookBlack = match[2].indexOf('r');
     var rightRookBlack = match[2].indexOf('r', leftRookBlack + 1);
     var rookFiles = String.fromCharCode('a'.charCodeAt(0) + rightRookBlack, 'a'.charCodeAt(0) + leftRookBlack);
-    return pgn.replace(fenRE, '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]');
+    return pgn.replace(fenRE, '[FEN "' + match[1] + rookFiles.toUpperCase() + rookFiles + ' - 0 1"]\n');
   }
   return pgn;
 }
@@ -375,5 +375,3 @@ if (enabledInSession === null) {  // indicates session start
     }
   });
 }
-
-// XXX Eventually test first run experience again.
