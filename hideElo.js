@@ -15,11 +15,13 @@
 
 // Try to read options from session storage. This initially returns null, then 'true'/'false'.
 
-// Convert FEN to Shredder-FEN. Default to false.
-var convertFen = sessionStorage.getItem('convertFen') === 'true';
 // Hide ratings on the current tab. Default to true.
 const enabledInSession = sessionStorage.getItem('enabled');
 var enabled = enabledInSession === 'true' || enabledInSession === null;
+// Allow toggle via icon click. Default to false.
+var allowToggle = sessionStorage.getItem('allowToggle') === 'true';
+// Convert FEN to Shredder-FEN. Default to false.
+var convertFen = sessionStorage.getItem('convertFen') === 'true';
 
 // ---------- Regular expressions ----------
 
@@ -321,11 +323,15 @@ function doTheThing() {
   if (enabled && !skipPage) {
     document.body.classList.remove('no_hide_elo');
     document.title = hiddenTitle;
-    if (pgn) pgn.textContent = hiddenPgn;
+    if (pgn) {
+      pgn.textContent = hiddenPgn;
+    }
   } else {
     document.body.classList.add('no_hide_elo');
     document.title = originalTitle;
-    if (pgn) pgn.textContent = originalPgn;
+    if (pgn) {
+      pgn.textContent = originalPgn;
+    }
   }
 }
 
@@ -333,12 +339,15 @@ function doTheThing() {
 
 // Process clicks on the icon, sent from the background script.
 browser.runtime.onMessage.addListener(message => {
-  if (message.operation == 'iconClicked') {
+  if (message.operation === 'iconClicked') {
+    if (!allowToggle) {
+      return;
+    }
     enabled = !enabled;
+    storeOptionsForSession();
+    doTheThing();
+    setIconState();
   }
-  storeOptionsForSession();
-  doTheThing();
-  setIconState();
 });
 
 function setIconState() {
@@ -348,26 +357,32 @@ function setIconState() {
 // ---------- Store/retrieve enabled state and options ----------
 
 function storeOptionsForSession() {
-  sessionStorage.setItem('convertFen', convertFen);
   sessionStorage.setItem('enabled', enabled);
+  sessionStorage.setItem('allowToggle', allowToggle);
+  sessionStorage.setItem('convertFen', convertFen);
 }
 
 if (enabledInSession === null) {  // indicates session start
   // Read options from sync storage. This uses actual booleans.
-  browser.storage.sync.get(['defaultEnabled', 'convertFen']).then(options => {
-    convertFen = !!options.convertFen;
+  browser.storage.sync.get(['defaultEnabled', 'allowToggle', 'convertFen']).then(options => {
     enabled = options.defaultEnabled === undefined || options.defaultEnabled;
+    allowToggle = options.allowToggle === undefined || options.allowToggle;
+    convertFen = !!options.convertFen;
     storeOptionsForSession();
-    if (convertFen) convertFenIfChess960();
+    if (convertFen) {
+      convertFenIfChess960();
+    }
     doTheThing();
     setIconState();
   });
 } else {
   doTheThing();
   setIconState();
-  // Pick up changes to the convertFen option.
-  browser.storage.sync.get('convertFen').then(options => {
+  // Pick up changes to the allowToggle and convertFen options.
+  browser.storage.sync.get(['allowToggle', 'convertFen']).then(options => {
+    allowToggle = !!options.allowToggle;
     convertFen = !!options.convertFen;
+    sessionStorage.setItem('allowToggle', allowToggle);
     sessionStorage.setItem('convertFen', convertFen);
     if (convertFen) {
       convertFenIfChess960();
