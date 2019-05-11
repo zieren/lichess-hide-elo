@@ -63,7 +63,7 @@ const fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]
 // ---------- Helpers ----------
 
 // Replace the &nbsp; Lichess sometimes puts between name and rating.
-function createSeparator() {
+function createSeparator() {  // XXX Still needed?
   var nbsp = document.createTextNode('\u00A0');
   var span = document.createElement('span');
   span.appendChild(nbsp);
@@ -108,8 +108,9 @@ if (hooksWrap) {
 function observeLeftSideBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
+      console.log(node);
       if (typeof node.querySelectorAll === 'function') {
-        hideRatingsInLeftSidebox(node.querySelectorAll('.side_box div.players .player a.user_link'));
+        hideRatingsInLeftSidebox(node.querySelectorAll('div.game__meta__players .player a.user-link'));
       }
     });
   });
@@ -118,38 +119,35 @@ function observeLeftSideBox(mutations) {
 function hideRatingsInLeftSidebox(players) {
   players.forEach(function(player) {
     // A title like IM is a separate node.
+    var titleSeparator = '';
     if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
       var nameNode = player.childNodes[1];
-      player.insertBefore(createSeparator(), nameNode);
+      titleSeparator = ' ';
     } else {
       var nameNode = player.childNodes[0];
     }
     var match = leftSideboxNameRatingRE.exec(nameNode.textContent);
     if (match) {
-      nameNode.textContent = match[1];  // Just the name.
+      nameNode.textContent = titleSeparator + match[1];  // Just the name.
       var rating = document.createElement('span');
-      rating.textContent = match[2];
+      rating.textContent = ' ' + match[2] + (nameNode.nextSibling ? ' ' : '');
       rating.classList.add('hide_elo');
       // Insert before rating change if it exists (i.e. it's a rated game), or else at the end if
       // nextSibling is null.
       player.insertBefore(rating, nameNode.nextSibling);
-      // Lichess puts an nbsp between name and rating.
-      player.insertBefore(createSeparator(), nameNode.nextSibling);
       // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
     }
   });
 }
 
-var boardLeft = document.querySelector('div.board_left');
-if (boardLeft) {
-  new MutationObserver(observeLeftSideBox).observe(boardLeft, {childList: true, subtree: true });
-}
-
+// XXX Globally update name from "left side.?box" -> gameMetaPlayers...
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
-// it will show the text from the link.
-hideRatingsInLeftSidebox(document.querySelectorAll('.side_box div.players .player a.user_link'));
+// it will show the text from the user-link.
+hideRatingsInLeftSidebox(document.querySelectorAll('div.game__meta__players .player a.user-link'));
+
+// XXX Check user_link -> user-link
 
 // ---------- Tooltip ----------
 

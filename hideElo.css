@@ -6,52 +6,55 @@
 /* Tooltip over player name */
 #powerTip .upt__info__ratings,
 /* Elo change in left side box */
-.side_box .players .player .rp,
+div.game__meta__players .player good,
+div.game__meta__players .player bad,
 /* Ingame box on the left: rating */
-.side_box .players .player a.user_link .hide_elo,
+div.game__meta__players .player a.user-link,
+div.game__meta__players .player a.user-link .hide_elo,
 /* Tooltip over player name *while* loading. */
-#powerTip .user_link .hide_elo,
-#powerTip .user_link .rp,
-/* Analysis board: rating change */
-div.advice_summary a.user_link .rp,
-/* Profile page: Activity */
-div.user_show div.activity div.entry rating,
-/* Profile page: Games */
-div.user_show div.game_row div.infos div.versus div.player,
-/* Profile page: textual ratings */
-div.sub_ratings span.rating,
-div.sub_ratings span.rank,
-/* Profile page: graphical ratings */
-div.rating_history,
-/* Challenge: incoming */
-div.challenge_notifications div.challenges a.user_link name .hide_elo,
-/* Challenge: outgoing */
-div#hooks_wrap div.lichess_overboard.game_config div.ratings,
-/* Analysis board: PGN */
-div.analysis_panels div.panel.fen_pgn div.pgn
-{
-	visibility: hidden;
-}
+#powerTip .user-link .hide_elo,
+#powerTip .user-link good,
+#powerTip .user-link bad,
+	/* Analysis board: rating change */
+	div.advice_summary a.user_link .rp,
+	/* Profile page: Activity */
+	div.user_show div.activity div.entry rating,
+	/* Profile page: Games */
+	div.user_show div.game_row div.infos div.versus div.player,
+	/* Profile page: textual ratings */
+	div.sub_ratings span.rating,
+	div.sub_ratings span.rank,
+	/* Profile page: graphical ratings */
+	div.rating_history,
+	/* Challenge: incoming */
+	div.challenge_notifications div.challenges a.user_link name .hide_elo,
+	/* Challenge: outgoing */
+	div#hooks_wrap div.lichess_overboard.game_config div.ratings,
+	/* Analysis board: PGN */
+	div.analysis_panels div.panel.fen_pgn div.pgn
+	{
+		visibility: hidden;
+	}
 
-/* Prevent player links in the left ingame side box from flashing with ratings
- * *while* the page is loading and before the content script runs at document_end.
- * This is reversed by the content script using .elo_hidden (see below). */
-.side_box .players .player a.user_link
-{
-	visibility: hidden;
-}
+	/* Prevent player links in the left ingame side box from flashing with ratings
+	 * *while* the page is loading and before the content script runs at document_end.
+	 * This is reversed by the content script using .elo_hidden (see below). */
+	.side_box .players .player a.user_link
+	{
+		visibility: hidden;
+	}
 
-/* Elo in seek list. Other methods don't preserve the cell background. */
-div.lobby_box td.hide_elo
-{
-	font-size: 0;
-}
+	/* Elo in seek list. Other methods don't preserve the cell background. */
+	div.lobby_box td.hide_elo
+	{
+		font-size: 0;
+	}
 
-/* Profile page: mouse hover */
-div.rating_history
-{
-	pointer-events: none;
-}
+	/* Profile page: mouse hover */
+	div.rating_history
+	{
+		pointer-events: none;
+	}
 
 /* Show ratings when extension is off. */
 
@@ -59,32 +62,33 @@ body.no_hide_elo .ruser rating,
 body.no_hide_elo .ruser good,
 body.no_hide_elo .ruser bad,
 body.no_hide_elo #powerTip .upt__info__ratings,
-body.no_hide_elo .side_box .players .player .rp,
-body.no_hide_elo .side_box .players .player a.user_link,
-.side_box .players .player a.user_link.elo_hidden,
-body.no_hide_elo .side_box .players .player a.user_link .hide_elo,
-body.no_hide_elo #powerTip .user_link .hide_elo,
-body.no_hide_elo #powerTip .user_link .rp,
-body.no_hide_elo div.advice_summary a.user_link .rp,
-body.no_hide_elo div.user_show div.activity div.entry rating,
-body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
-div.user_show div.game_row div.infos div.versus div.player a.user_link,
-body.no_hide_elo div.sub_ratings span.rating,
-body.no_hide_elo div.sub_ratings span.rank,
-body.no_hide_elo div.rating_history,
-body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo,
-body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings,
-div.analysis_panels div.panel.fen_pgn div.pgn.elo_hidden
-{
-	visibility: visible;
-}
+body.no_hide_elo div.game__meta__players .player good,
+body.no_hide_elo div.game__meta__players .player bad,
+div.game__meta__players .player a.user-link.elo_hidden,
+body.no_hide_elo div.game__meta__players .player a.user-link .hide_elo,
+body.no_hide_elo #powerTip .user-link .hide_elo,
+body.no_hide_elo #powerTip .user-link good,
+body.no_hide_elo #powerTip .user-link bad,
+	body.no_hide_elo div.advice_summary a.user_link .rp,
+	body.no_hide_elo div.user_show div.activity div.entry rating,
+	body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
+	div.user_show div.game_row div.infos div.versus div.player a.user_link,
+	body.no_hide_elo div.sub_ratings span.rating,
+	body.no_hide_elo div.sub_ratings span.rank,
+	body.no_hide_elo div.rating_history,
+	body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo,
+	body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings,
+	div.analysis_panels div.panel.fen_pgn div.pgn.elo_hidden
+	{
+		visibility: visible;
+	}
 
-body.no_hide_elo div.lobby_box td.hide_elo
-{
-	font-size: 100%;
-}
+	body.no_hide_elo div.lobby_box td.hide_elo
+	{
+		font-size: 100%;
+	}
 
-body.no_hide_elo div.rating_history
-{
-	pointer-events: auto;
-}
+	body.no_hide_elo div.rating_history
+	{
+		pointer-events: auto;
+	}
