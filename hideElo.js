@@ -99,14 +99,12 @@ function hideRatingsInSeekList(rows) {
   });
 }
 
-// XXX var hooksList = document.querySelector('table.hooks_list');
-// var hooksList = document.querySelector('div.lobby__app'); // XXX name
-var hooksList = document.querySelector('main.lobby'); // XXX name
-// XXX Would it be silly to add a mutation observer to main.lobby to add a mutation observer to
-// table.hooks_list? Or should we just consume all the mutation noise?
-console.log(hooksList);
-if (hooksList) {
-  new MutationObserver(observeLobbyBox).observe(hooksList, {childList: true, subtree: true});
+// main.lobby has a lot of noise, but its descendents are ephemeral so there seems to be no better
+// node to observe.
+var mainLobby = document.querySelector('main.lobby');
+if (mainLobby) {
+  console.log(mainLobby);
+  new MutationObserver(observeLobbyBox).observe(mainLobby, {childList: true, subtree: true});
 }
 
 // ---------- Ingame left side box ----------
