@@ -78,6 +78,7 @@ function observeLobbyBox(mutations) {
       // When new seeks come in, individual rows are added. When switching tabs or switching back
       // from the filter settings the whole table is rebuilt and re-added.
       if (node.tagName === 'TR') {
+        console.log(node);
         hideRatingsInSeekList([node]);
       } else if (typeof node.querySelectorAll === 'function') {
         hideRatingsInSeekList(node.querySelectorAll('tr'));
@@ -98,9 +99,14 @@ function hideRatingsInSeekList(rows) {
   });
 }
 
-var hooksWrap = document.querySelector('div#hooks_wrap');
-if (hooksWrap) {
-  new MutationObserver(observeLobbyBox).observe(hooksWrap, {childList: true, subtree: true});
+// XXX var hooksList = document.querySelector('table.hooks_list');
+// var hooksList = document.querySelector('div.lobby__app'); // XXX name
+var hooksList = document.querySelector('main.lobby'); // XXX name
+// XXX Would it be silly to add a mutation observer to main.lobby to add a mutation observer to
+// table.hooks_list? Or should we just consume all the mutation noise?
+console.log(hooksList);
+if (hooksList) {
+  new MutationObserver(observeLobbyBox).observe(hooksList, {childList: true, subtree: true});
 }
 
 // ---------- Ingame left side box ----------
@@ -108,7 +114,6 @@ if (hooksWrap) {
 function observeLeftSideBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
-      console.log(node);
       if (typeof node.querySelectorAll === 'function') {
         hideRatingsInLeftSidebox(node.querySelectorAll('div.game__meta__players .player a.user-link'));
       }

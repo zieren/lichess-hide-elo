@@ -44,11 +44,12 @@ div.game__meta__players .player a.user-link .hide_elo,
 		visibility: hidden;
 	}
 
-	/* Elo in seek list. Other methods don't preserve the cell background. */
-	div.lobby_box td.hide_elo
-	{
-		font-size: 0;
-	}
+/* Elo in seek list. Other methods don't preserve the cell background and mouse
+ * events. */
+div.lobby__app__content td.hide_elo
+{
+	font-size: 0;
+}
 
 	/* Profile page: mouse hover */
 	div.rating_history
@@ -83,10 +84,10 @@ body.no_hide_elo #powerTip .user-link bad,
 		visibility: visible;
 	}
 
-	body.no_hide_elo div.lobby_box td.hide_elo
-	{
-		font-size: 100%;
-	}
+body.no_hide_elo div.lobby__app__content td.hide_elo
+{
+	font-size: 100%;
+}
 
 	body.no_hide_elo div.rating_history
 	{
