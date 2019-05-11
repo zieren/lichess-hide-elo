@@ -1,9 +1,10 @@
 /* Ingame box on the right: rating */
-.username rating,
+.ruser rating,
 /* Ingame box on the right: rating change */
-.username .rp,
+.ruser good,
+.ruser bad,
 /* Tooltip over player name */
-#powerTip .ratings,
+#powerTip .upt__info__ratings,
 /* Elo change in left side box */
 .side_box .players .player .rp,
 /* Ingame box on the left: rating */
