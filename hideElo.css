@@ -15,10 +15,11 @@ div.game__meta__players .player a.user-link .hide_elo,
 #powerTip .user-link .hide_elo,
 #powerTip .user-link good,
 #powerTip .user-link bad,
-	/* Analysis board: rating change */
-	div.advice_summary a.user_link .rp,
-	/* Profile page: Activity */
-	div.user_show div.activity div.entry rating,
+/* Analysis board: rating change */
+div.advice-summary a.user-link good,
+div.advice-summary a.user-link bad,
+/* Profile page: Activity */
+div.activity div.entry rating,
 	/* Profile page: Games */
 	div.user_show div.game_row div.infos div.versus div.player,
 	/* Profile page: textual ratings */
@@ -70,8 +71,9 @@ body.no_hide_elo div.game__meta__players .player a.user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link good,
 body.no_hide_elo #powerTip .user-link bad,
-	body.no_hide_elo div.advice_summary a.user_link .rp,
-	body.no_hide_elo div.user_show div.activity div.entry rating,
+body.no_hide_elo div.advice-summary a.user-link good,
+body.no_hide_elo div.advice-summary a.user-link bad,
+body.no_hide_elo div.activity div.entry rating,
 	body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
 	div.user_show div.game_row div.infos div.versus div.player a.user_link,
 	body.no_hide_elo div.sub_ratings span.rating,
