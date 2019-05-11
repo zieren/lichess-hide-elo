@@ -78,7 +78,6 @@ function observeLobbyBox(mutations) {
       // When new seeks come in, individual rows are added. When switching tabs or switching back
       // from the filter settings the whole table is rebuilt and re-added.
       if (node.tagName === 'TR') {
-        console.log(node);
         hideRatingsInSeekList([node]);
       } else if (typeof node.querySelectorAll === 'function') {
         hideRatingsInSeekList(node.querySelectorAll('tr'));
@@ -103,7 +102,6 @@ function hideRatingsInSeekList(rows) {
 // node to observe.
 var mainLobby = document.querySelector('main.lobby');
 if (mainLobby) {
-  console.log(mainLobby);
   new MutationObserver(observeLobbyBox).observe(mainLobby, {childList: true, subtree: true});
 }
 
@@ -150,7 +148,7 @@ function hideRatingsInLeftSidebox(players) {
 // it will show the text from the user-link.
 hideRatingsInLeftSidebox(document.querySelectorAll('div.game__meta__players .player a.user-link'));
 
-// XXX Check user_link -> user-link
+// XXX Check user_link -> user-link (and all others!)
 
 // ---------- Tooltip ----------
 
@@ -222,7 +220,7 @@ function observeIncomingChallenge(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
       if (typeof node.querySelector === 'function') {
-        var name = node.querySelector('div.challenges a.user_link name');
+        var name = node.querySelector('div.challenges a.user-link name');
         if (name) {
           hideRatingsInIncomingChallenge(name);
         }
@@ -244,9 +242,9 @@ function hideRatingsInIncomingChallenge(name) {
   }
 }
 
-var challengeNotifications = document.querySelector('div#top div.challenge_notifications');
-if (challengeNotifications) {
-  new MutationObserver(observeIncomingChallenge).observe(challengeNotifications, {childList: true, subtree: true});
+var headerTop = document.querySelector('header#top');
+if (headerTop) {
+  new MutationObserver(observeIncomingChallenge).observe(headerTop, {childList: true, subtree: true});
 }
 
 // ---------- FEN->Shredder-FEN conversion ----------
@@ -271,7 +269,7 @@ function doConvertFen(pgn) {
 
 // ---------- Analysis board: embedded PGN ----------
 
-var pgn = document.querySelector('div.analysis_panels div.panel.fen_pgn div.pgn');
+var pgn = document.querySelector('div.analyse__underboard__panels div.fen-pgn div.pgn');
 var originalPgn;
 var hiddenPgn;
 if (pgn) {
@@ -391,3 +389,5 @@ if (enabledInSession === null) {  // indicates session start
     }
   });
 }
+
+// XXX Remove console.logs.

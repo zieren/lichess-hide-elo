@@ -25,18 +25,17 @@ div.games article.game-row div.versus div.player,
 /* Profile page: textual ratings */
 div.sub-ratings rating,
 div.sub-ratings .rank,
-
-	/* Profile page: graphical ratings */
-	div.rating_history,
-	/* Challenge: incoming */
-	div.challenge_notifications div.challenges a.user_link name .hide_elo,
-	/* Challenge: outgoing */
-	div#hooks_wrap div.lichess_overboard.game_config div.ratings,
-	/* Analysis board: PGN */
-	div.analysis_panels div.panel.fen_pgn div.pgn
-	{
-		visibility: hidden;
-	}
+/* Profile page: graphical ratings */
+div.rating-history,
+/* Challenge: incoming */
+div#challenge-app div.challenges a.user-link name .hide_elo,
+/* Challenge: outgoing */
+div#modal-wrap div.ratings,
+/* Analysis board: PGN */
+div.analyse__underboard__panels div.fen-pgn div.pgn
+{
+	visibility: hidden;
+}
 
 	/* Prevent player links in the left ingame side box from flashing with ratings
 	 * *while* the page is loading and before the content script runs at document_end.
@@ -59,10 +58,11 @@ div.lobby__app__content td.hide_elo
 		pointer-events: none;
 	}
 
-/* Undo hide for some subcomponents. */
+/* Undo hide for subcomponents, or after processing. */
 div.game__meta__players .player a.user-link.elo_hidden,
 div.games article.game-row div.versus div.player a.user-link,
-div.sub-ratings rating span
+div.sub-ratings rating span,
+div.analyse__underboard__panels div.fen-pgn div.pgn.elo_hidden
 {
 	visibility: visible;
 }
@@ -85,14 +85,13 @@ body.no_hide_elo div.activity div.entry rating,
 body.no_hide_elo div.games article.game-row div.versus div.player,
 body.no_hide_elo div.sub-ratings rating,
 body.no_hide_elo div.sub-ratings .rank,
-
-	body.no_hide_elo div.rating_history,
-	body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo,
-	body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings,
-	div.analysis_panels div.panel.fen_pgn div.pgn.elo_hidden
-	{
-		visibility: visible;
-	}
+body.no_hide_elo div.rating-history,
+body.no_hide_elo div#challenge-app div.challenges a.user-link name .hide_elo,
+body.no_hide_elo div#modal-wrap div.ratings,
+/* XXX div.analyse__underboard__panels div.fen-pgn div.pgn.elo_hidden */
+{
+	visibility: visible;
+}
 
 body.no_hide_elo div.lobby__app__content td.hide_elo
 {
