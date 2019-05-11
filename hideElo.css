@@ -20,11 +20,12 @@ div.advice-summary a.user-link good,
 div.advice-summary a.user-link bad,
 /* Profile page: Activity */
 div.activity div.entry rating,
-	/* Profile page: Games */
-	div.user_show div.game_row div.infos div.versus div.player,
-	/* Profile page: textual ratings */
-	div.sub_ratings span.rating,
-	div.sub_ratings span.rank,
+/* Profile page: Games */
+div.games article.game-row div.versus div.player,
+/* Profile page: textual ratings */
+div.sub-ratings rating,
+div.sub-ratings .rank,
+
 	/* Profile page: graphical ratings */
 	div.rating_history,
 	/* Challenge: incoming */
@@ -58,6 +59,14 @@ div.lobby__app__content td.hide_elo
 		pointer-events: none;
 	}
 
+/* Undo hide for some subcomponents. */
+div.game__meta__players .player a.user-link.elo_hidden,
+div.games article.game-row div.versus div.player a.user-link,
+div.sub-ratings rating span
+{
+	visibility: visible;
+}
+
 /* Show ratings when extension is off. */
 
 body.no_hide_elo .ruser rating,
@@ -66,7 +75,6 @@ body.no_hide_elo .ruser bad,
 body.no_hide_elo #powerTip .upt__info__ratings,
 body.no_hide_elo div.game__meta__players .player good,
 body.no_hide_elo div.game__meta__players .player bad,
-div.game__meta__players .player a.user-link.elo_hidden,
 body.no_hide_elo div.game__meta__players .player a.user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link good,
@@ -74,10 +82,10 @@ body.no_hide_elo #powerTip .user-link bad,
 body.no_hide_elo div.advice-summary a.user-link good,
 body.no_hide_elo div.advice-summary a.user-link bad,
 body.no_hide_elo div.activity div.entry rating,
-	body.no_hide_elo div.user_show div.game_row div.infos div.versus div.player,
-	div.user_show div.game_row div.infos div.versus div.player a.user_link,
-	body.no_hide_elo div.sub_ratings span.rating,
-	body.no_hide_elo div.sub_ratings span.rank,
+body.no_hide_elo div.games article.game-row div.versus div.player,
+body.no_hide_elo div.sub-ratings rating,
+body.no_hide_elo div.sub-ratings .rank,
+
 	body.no_hide_elo div.rating_history,
 	body.no_hide_elo div.challenge_notifications div.challenges a.user_link name .hide_elo,
 	body.no_hide_elo div#hooks_wrap div.lichess_overboard.game_config div.ratings,
