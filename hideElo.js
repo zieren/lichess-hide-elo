@@ -60,16 +60,6 @@ const chess960RE = /\[Variant\s*"Chess960"\]/;
 // FEN tag in the PGN (initial position).
 const fenRE = /\[FEN\s*"(([nbrqk]{8})\/p{8}\/(?:8\/){4}P{8}\/([NBRQK]{8})\s+[wb]\s+)KQkq - 0 1"\]\n/;
 
-// ---------- Helpers ----------
-
-// Replace the &nbsp; Lichess sometimes puts between name and rating.
-function createSeparator() {  // XXX Still needed?
-  var nbsp = document.createTextNode('\u00A0');
-  var span = document.createElement('span');
-  span.appendChild(nbsp);
-  return span;
-}
-
 // ---------- Seek list ----------
 
 function observeLobbyBox(mutations) {
@@ -232,13 +222,11 @@ function observeIncomingChallenge(mutations) {
 function hideRatingsInIncomingChallenge(name) {
   var match = challengeNameRE.exec(name.textContent);
   if (match) {
-    name.textContent = match[1];
-    name.appendChild(createSeparator());
+    name.textContent = match[1] + ' ';
     var rating = document.createElement('span');
-    rating.textContent = match[2];
+    rating.textContent = match[2] + ' ';
     rating.classList.add('hide_elo');
     name.appendChild(rating);
-    name.appendChild(createSeparator());
   }
 }
 
@@ -310,7 +298,7 @@ function interceptPgnDownload(event) {
   return false;  // skip the href
 }
 
-var pgnLinks = document.querySelectorAll('div.analysis_panels div.panel.fen_pgn div.pgn_options a:not(.embed_howto)');
+var pgnLinks = document.querySelectorAll('div.analyse__underboard__panels div.fen-pgn div.pgn-options a:not(.embed-howto)');
 pgnLinks.forEach(function(a) {
   a.onclick = interceptPgnDownload;
 });
@@ -389,5 +377,3 @@ if (enabledInSession === null) {  // indicates session start
     }
   });
 }
-
-// XXX Remove console.logs.

@@ -27,8 +27,6 @@ div.sub-ratings rating,
 div.sub-ratings .rank,
 /* Profile page: graphical ratings */
 div.rating-history,
-/* Challenge: incoming */
-div#challenge-app div.challenges a.user-link name .hide_elo,
 /* Challenge: outgoing */
 div#modal-wrap div.ratings,
 /* Analysis board: PGN */
@@ -36,10 +34,15 @@ div.analyse__underboard__panels div.fen-pgn div.pgn
 {
 	visibility: hidden;
 }
+/* Challenge: incoming */
+div#challenge-app div.challenges a.user-link name .hide_elo
+{
+	display: none;
+}
 
 	/* Prevent player links in the left ingame side box from flashing with ratings
 	 * *while* the page is loading and before the content script runs at document_end.
-	 * This is reversed by the content script using .elo_hidden (see below). */
+	 * This is reversed by the content script addin .elo_hidden (see below). */
 	.side_box .players .player a.user_link
 	{
 		visibility: hidden;
@@ -52,11 +55,11 @@ div.lobby__app__content td.hide_elo
 	font-size: 0;
 }
 
-	/* Profile page: mouse hover */
-	div.rating_history
-	{
-		pointer-events: none;
-	}
+/* Profile page: mouse hover */
+div.rating-history
+{
+	pointer-events: none;
+}
 
 /* Undo hide for subcomponents, or after processing. */
 div.game__meta__players .player a.user-link.elo_hidden,
@@ -67,7 +70,7 @@ div.analyse__underboard__panels div.fen-pgn div.pgn.elo_hidden
 	visibility: visible;
 }
 
-/* Show ratings when extension is off. */
+/* --- Show ratings when extension is off. --- */
 
 body.no_hide_elo .ruser rating,
 body.no_hide_elo .ruser good,
@@ -86,11 +89,13 @@ body.no_hide_elo div.games article.game-row div.versus div.player,
 body.no_hide_elo div.sub-ratings rating,
 body.no_hide_elo div.sub-ratings .rank,
 body.no_hide_elo div.rating-history,
-body.no_hide_elo div#challenge-app div.challenges a.user-link name .hide_elo,
-body.no_hide_elo div#modal-wrap div.ratings,
-/* XXX div.analyse__underboard__panels div.fen-pgn div.pgn.elo_hidden */
+body.no_hide_elo div#modal-wrap div.ratings
 {
 	visibility: visible;
+}
+body.no_hide_elo div#challenge-app div.challenges a.user-link name .hide_elo
+{
+	display: inline;
 }
 
 body.no_hide_elo div.lobby__app__content td.hide_elo
@@ -98,7 +103,7 @@ body.no_hide_elo div.lobby__app__content td.hide_elo
 	font-size: 100%;
 }
 
-	body.no_hide_elo div.rating_history
-	{
-		pointer-events: auto;
-	}
+body.no_hide_elo div.rating-history
+{
+	pointer-events: auto;
+}
