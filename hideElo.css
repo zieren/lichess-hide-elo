@@ -55,9 +55,10 @@ div.rating_history
 
 /* Show ratings when extension is off. */
 
-body.no_hide_elo .username rating,
-body.no_hide_elo .username .rp,
-body.no_hide_elo #powerTip .ratings,
+body.no_hide_elo .ruser rating,
+body.no_hide_elo .ruser good,
+body.no_hide_elo .ruser bad,
+body.no_hide_elo #powerTip .upt__info__ratings,
 body.no_hide_elo .side_box .players .player .rp,
 body.no_hide_elo .side_box .players .player a.user_link,
 .side_box .players .player a.user_link.elo_hidden,
