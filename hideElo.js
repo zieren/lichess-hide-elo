@@ -44,8 +44,8 @@ const tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleName
 // Caveat: I don't know what a challenge from a titled player looks like :-)
 const challengeNameRE = new RegExp(titleNameRating);
 
-// Matches the TV title, e.g. "foo (1234) - bar (2345) * lichess.org"
-const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.\\s+lichess\\.org)$');
+// A page title, e.g. "foo (1234) - bar (2345) * lichess.org"
+const pageTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.\\s+lichess\\.org)$');
 
 // Matches ratings in the PGN.
 const pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
@@ -75,8 +75,7 @@ function observeLobbyBox(mutations) {
 function hideRatingsInSeekList(rows) {
   rows.forEach(function(row) {
     if (row.children.length >= 3 && row.classList.contains('join')) {
-      var cell = row.children[2];
-      cell.classList.add('hide_elo');
+      row.children[2].classList.add('hide_elo');
     }
   });
 }
@@ -194,11 +193,11 @@ function hideRatingsInMiniGameLegend(node) {
 
 new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true});
 
-// ---------- Page title (e.g. TV) ----------
+// ---------- Page title (e.g. watching a game) ----------
 
 var originalTitle = document.title;
 var hiddenTitle = document.title;
-var match = tvTitleRE.exec(document.title);
+var match = pageTitleRE.exec(document.title);
 if (match) {
   hiddenTitle = match[1] + ' - ' + match[3] + ' ' + match[5];
 }
