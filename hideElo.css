@@ -40,14 +40,6 @@ div#challenge-app div.challenges a.user-link name .hide_elo
 	display: none;
 }
 
-	/* Prevent player links in the left ingame side box from flashing with ratings
-	 * *while* the page is loading and before the content script runs at document_end.
-	 * This is reversed by the content script addin .elo_hidden (see below). */
-	.side_box .players .player a.user_link
-	{
-		visibility: hidden;
-	}
-
 /* Elo in seek list. Other methods don't preserve the cell background and mouse
  * events. */
 div.lobby__app__content td.hide_elo

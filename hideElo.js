@@ -38,7 +38,7 @@ const ratingRE = /[123]?\d{3}\??/;
 const leftSideboxNameRatingRE = /(\S*)\s+(\([123]?\d{3}\??\))/;
 
 // Matches the legend shown below a game in the #powerTip, e.g. "IM foobar (2400) • 1+0".
-const tooltipGameLegendRE = new RegExp(titleNameRating + '\\s+(.*)');
+const tooltipGameLegendRE = new RegExp(titleNameRating);
 
 // Matches the tooltip of the #powerTip, e.g. "GM foobar (2500) vs baz (1500?) • 15+15".
 const tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleNameRating + '\\s+(.*)');
@@ -48,8 +48,7 @@ const tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleName
 const challengeNameRE = new RegExp(titleNameRating);
 
 // Matches the TV title, e.g. "foo (1234) - bar (2345) in xyz123 * lichess.org"
-const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*)');
-const tvTitlePageRE = new RegExp('.*/tv$');
+const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*\\blichess\\.org)$');
 
 // Matches ratings in the PGN.
 const pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
@@ -66,7 +65,7 @@ function observeLobbyBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
       // When new seeks come in, individual rows are added. When switching tabs or switching back
-      // from the filter settings the whole table is rebuilt and re-added.
+      // from the filter settings the whole table is rebuilt and re-added.  XXX Still true?
       if (node.tagName === 'TR') {
         hideRatingsInSeekList([node]);
       } else if (typeof node.querySelectorAll === 'function') {
@@ -80,7 +79,7 @@ function hideRatingsInSeekList(rows) {
   rows.forEach(function(row) {
     if (row.children.length >= 3) {
       var cell = row.children[2];
-      // This is really just a hack to skip the top row (which contains headings):
+      // This is really just a hack to skip the top row (which contains headings):  XXX still needed?
       if (ratingRE.test(cell.textContent)) {
         cell.classList.add('hide_elo');
       }
@@ -140,22 +139,34 @@ hideRatingsInLeftSidebox(document.querySelectorAll('div.game__meta__players .pla
 
 // XXX Check user_link -> user-link (and all others!)
 
-// ---------- Tooltip ----------
+// ---------- Tooltip ---------- XXX fix this
 
 function observeTooltip(mutations) {
   if (!enabled) {
     return;
   }
-  // Enabled state can't be toggled while the tooltip is shown, so we don't need to use CSS.
+  // Enabled state can't be toggled while the tooltip is shown, so we can manipulate in place.
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
+      // Sometimes relevant nodes are added directly...
       if (typeof node.matches === 'function') {
-        if (node.matches('#powerTip div.game_legend')) {
+        if (node.matches('#powerTip div.upt__game-legend')) {
           hideRatingsInTooltipGameLegend(node);
-        } else if (node.matches('#miniGame a.mini_board') || node.matches('#powerTip a.mini_board')) {
-          hideRatingsInMetaTooltip(node);
-        } else if (node.matches('#miniGame div.vstext.clearfix')) {
-          hideRatingsInMiniGame(node);
+        } else if (node.matches('#powerTip a.mini-board')) {
+          // A currently running game.
+          hideRatingsInMiniGameTitle(node);
+        }
+      }
+      // ... and sometimes indirectly.
+      if (typeof node.querySelector === 'function') {
+        // A finished game e.g. on the cross table.
+        var miniBoard = node.querySelector('#miniGame span.mini-board');
+        if (miniBoard) {
+          hideRatingsInMiniGameTitle(miniBoard);
+        }
+        var miniGameLegend = node.querySelector('#miniGame span.vstext');
+        if (miniGameLegend) {
+          hideRatingsInMiniGameLegend(miniGameLegend);
         }
       }
     });
@@ -163,45 +174,42 @@ function observeTooltip(mutations) {
 }
 
 function hideRatingsInTooltipGameLegend(node) {
-  var match = tooltipGameLegendRE.exec(node.textContent);
-  if (match) {
-    node.textContent = match[1] + ' ' + match[3];
+  if (node.lastChild.nodeName === '#text') {
+    var match = tooltipGameLegendRE.exec(node.lastChild.textContent);
+    if (match) {
+      node.lastChild.textContent = match[1];
+    }
   }
 }
 
-function hideRatingsInMetaTooltip(node) {
+function hideRatingsInMiniGameTitle(node) {
   var match = tooltipGameTitleRE.exec(node.title);
   if (match) {
     node.title = match[1] + ' vs ' + match[3] + ' ' + match[5];
   }
 }
 
-function hideRatingsInMiniGame(node) {
+function hideRatingsInMiniGameLegend(node) {
   if (typeof node.querySelectorAll === 'function') {
-    var playerLeft = node.querySelector('div.left.user_link');
-    var playerRight = node.querySelector('div.right.user_link');
-    if (playerLeft) {
-      // Rating is the last node.
-      playerLeft.childNodes[playerLeft.childNodes.length - 1].remove();
-    }
-    if (playerRight) {
-      // Rating is at index 2, possibly followed by a title.
-      playerRight.childNodes[2].remove();
+    var players = node.querySelectorAll('span.user-link');
+    if (players.length === 2) {
+      // White rating is the last node.
+      players[0].childNodes[players[0].childNodes.length - 1].remove();
+      // Black rating is at index 2, possibly followed by a title.
+      players[1].childNodes[2].remove();
     }
   }
 }
 
 new MutationObserver(observeTooltip).observe(document, {childList: true, subtree: true});
 
-// ---------- TV title ----------
+// ---------- Page title (e.g. TV) ----------
 
 var originalTitle = document.title;
 var hiddenTitle = document.title;
-if (tvTitlePageRE.test(location.href)) {
-  var match = tvTitleRE.exec(document.title);
-  if (match) {
-    hiddenTitle = match[1] + ' - ' + match[3] + ' ' + match[5];
-  }
+var match = tvTitleRE.exec(document.title);
+if (match) {
+  hiddenTitle = match[1] + ' - ' + match[3] + ' ' + match[5];
 }
 
 // ---------- Challenge (incoming) ----------
