@@ -31,9 +31,6 @@ const skipPageRE = new RegExp('^https?://lichess.org/training(/.*)?$');
 // Generic pattern to match "foobar (1234)" or "WIM foobar (2500?)" or "BOT foobar (3333)".
 const titleNameRating = '((?:[A-Z]{2,}\\s+)?\\S+)\\s+(\\([123]?\\d{3}\\??\\))';
 
-// Matches a plain rating, like "666" or "2345".
-const ratingRE = /[123]?\d{3}\??/;
-
 // Matches name and rating in the left sidebox, e.g. "foobar (1500?)".
 const leftSideboxNameRatingRE = /(\S*)\s+(\([123]?\d{3}\??\))/;
 
@@ -47,8 +44,8 @@ const tooltipGameTitleRE = new RegExp(titleNameRating + '\\s+vs\\s+' + titleName
 // Caveat: I don't know what a challenge from a titled player looks like :-)
 const challengeNameRE = new RegExp(titleNameRating);
 
-// Matches the TV title, e.g. "foo (1234) - bar (2345) in xyz123 * lichess.org"
-const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.*\\blichess\\.org)$');
+// Matches the TV title, e.g. "foo (1234) - bar (2345) * lichess.org"
+const tvTitleRE = new RegExp(titleNameRating + '\\s+-\\s+' + titleNameRating + '\\s+(.\\s+lichess\\.org)$');
 
 // Matches ratings in the PGN.
 const pgnRatingsRE = /\[(WhiteElo|BlackElo|WhiteRatingDiff|BlackRatingDiff)\b.*\]\n/g;
@@ -65,7 +62,7 @@ function observeLobbyBox(mutations) {
   mutations.forEach(function(mutation) {
     mutation.addedNodes.forEach(function(node) {
       // When new seeks come in, individual rows are added. When switching tabs or switching back
-      // from the filter settings the whole table is rebuilt and re-added.  XXX Still true?
+      // from the filter settings the whole table is rebuilt and re-added.
       if (node.tagName === 'TR') {
         hideRatingsInSeekList([node]);
       } else if (typeof node.querySelectorAll === 'function') {
@@ -77,12 +74,9 @@ function observeLobbyBox(mutations) {
 
 function hideRatingsInSeekList(rows) {
   rows.forEach(function(row) {
-    if (row.children.length >= 3) {
+    if (row.children.length >= 3 && row.classList.contains('join')) {
       var cell = row.children[2];
-      // This is really just a hack to skip the top row (which contains headings):  XXX still needed?
-      if (ratingRE.test(cell.textContent)) {
-        cell.classList.add('hide_elo');
-      }
+      cell.classList.add('hide_elo');
     }
   });
 }
@@ -131,15 +125,12 @@ function hideRatingsInLeftSidebox(players) {
   });
 }
 
-// XXX Globally update name from "left side.?box" -> gameMetaPlayers...
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the user-link.
 hideRatingsInLeftSidebox(document.querySelectorAll('div.game__meta__players .player a.user-link'));
 
-// XXX Check user_link -> user-link (and all others!)
-
-// ---------- Tooltip ---------- XXX fix this
+// ---------- Tooltip ----------
 
 function observeTooltip(mutations) {
   if (!enabled) {
@@ -154,15 +145,15 @@ function observeTooltip(mutations) {
           hideRatingsInTooltipGameLegend(node);
         } else if (node.matches('#powerTip a.mini-board')) {
           // A currently running game.
-          hideRatingsInMiniGameTitle(node);
+          hideRatingsInMiniBoardTitle(node);
         }
       }
-      // ... and sometimes indirectly.
+      // ... and sometimes they are children of the added node.
       if (typeof node.querySelector === 'function') {
         // A finished game e.g. on the cross table.
         var miniBoard = node.querySelector('#miniGame span.mini-board');
         if (miniBoard) {
-          hideRatingsInMiniGameTitle(miniBoard);
+          hideRatingsInMiniBoardTitle(miniBoard);
         }
         var miniGameLegend = node.querySelector('#miniGame span.vstext');
         if (miniGameLegend) {
@@ -182,7 +173,7 @@ function hideRatingsInTooltipGameLegend(node) {
   }
 }
 
-function hideRatingsInMiniGameTitle(node) {
+function hideRatingsInMiniBoardTitle(node) {
   var match = tooltipGameTitleRE.exec(node.title);
   if (match) {
     node.title = match[1] + ' vs ' + match[3] + ' ' + match[5];
