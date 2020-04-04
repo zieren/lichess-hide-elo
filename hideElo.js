@@ -74,7 +74,8 @@ function observeLobbyBox(mutations) {
 
 function hideRatingsInSeekList(rows) {
   rows.forEach(function(row) {
-    if (row.children.length >= 3 && row.classList.contains('join')) {
+		    // "join" are seeks from others, "cancel" is your own.
+    if (row.children.length >= 3 && (row.classList.contains('join') || row.classList.contains('cancel'))) {
       row.children[2].classList.add('hide_elo');
     }
   });
