@@ -53,6 +53,14 @@ div.rating-history
 	pointer-events: none;
 }
 
+/* Profile page: current rating, highest/lowest rating, best/worst games */
+section.glicko,
+section.highlow.split,
+section.result.split
+{
+	display: none;
+}
+
 /* Undo hide for subcomponents, or after processing. */
 div.game__meta__players .player a.user-link.elo_hidden,
 div.games article.game-row div.versus div.player a.user-link,
@@ -88,6 +96,12 @@ body.no_hide_elo div#modal-wrap div.ratings
 body.no_hide_elo div#challenge-app div.challenges a.user-link name .hide_elo
 {
 	display: inline;
+}
+body.no_hide_elo section.glicko,
+body.no_hide_elo section.highlow.split,
+body.no_hide_elo section.result.split
+{
+	display: flex;
 }
 
 body.no_hide_elo div.lobby__app__content td.hide_elo
