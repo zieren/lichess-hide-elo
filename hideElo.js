@@ -305,14 +305,14 @@ pgnLinks.forEach(function(a) {
 // ---------- Insights: sample games ----------
 
 function processVsText(vsText) {
-  // The magic number 4 includes an empty text node. I hope it also covers special cases.
-  if (vsText.childNodes.length == 4) {
-    var span = document.createElement('span');
-    span.appendChild(vsText.childNodes[2]);
-    span.appendChild(vsText.childNodes[2]);
-    span.classList.add('hide_elo');
-    vsText.appendChild(span);
+  var children = vsText.childNodes;
+  var span = document.createElement('span');
+  span.classList.add('hide_elo');
+  // Name and rating are separated by a <BR>.
+  for (var i = children.length - 1; i >= 0 && children[i].nodeName !== 'BR'; --i) {
+    span.prepend(children[i]);
   }
+  vsText.appendChild(span);
 }
 
 function observeInsightGames(mutations) {
