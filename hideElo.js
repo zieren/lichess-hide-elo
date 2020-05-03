@@ -302,6 +302,35 @@ pgnLinks.forEach(function(a) {
   a.onclick = interceptPgnDownload;
 });
 
+// ---------- Insights: sample games ----------
+
+function processVsText(vsText) {
+  // The magic number 4 includes an empty text node. I hope it also covers special cases.
+  if (vsText.childNodes.length == 4) {
+    var span = document.createElement('span');
+    span.appendChild(vsText.childNodes[2]);
+    span.appendChild(vsText.childNodes[2]);
+    span.classList.add('hide_elo');
+    vsText.appendChild(span);
+  }
+}
+
+function observeInsightGames(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      if (typeof node.querySelectorAll === 'function') {
+        var vsTexts = node.querySelectorAll('span.vstext__pl, span.vstext__op');
+        vsTexts.forEach(vsText => processVsText(vsText));
+      }
+    });
+  });
+}
+
+var insight = document.querySelector('main#insight');
+if (insight) {
+  new MutationObserver(observeInsightGames).observe(insight, {childList: true, subtree: true});
+}
+
 // ---------- Toggle on/off ----------
 
 function doTheThing() {
