@@ -326,6 +326,7 @@ function observeInsightGames(mutations) {
   });
 }
 
+// Games are loaded asynchronously, so we need a MutationObserver.
 var insight = document.querySelector('main#insight');
 if (insight) {
   new MutationObserver(observeInsightGames).observe(insight, {childList: true, subtree: true});
