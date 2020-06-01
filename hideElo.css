@@ -31,7 +31,9 @@ div#modal-wrap div.ratings,
 div.analyse__underboard__panels div.fen-pgn div.pgn,
 /* Insights: sample games */
 main#insight div.game-sample span.vstext__pl span.hide_elo,
-main#insight div.game-sample span.vstext__op span.hide_elo
+main#insight div.game-sample span.vstext__op span.hide_elo,
+/* Tournaments: standings list */
+table.tour__standing span.rating
 {
 	visibility: hidden;
 }
@@ -97,7 +99,8 @@ body.no_hide_elo div.sub-ratings rating,
 body.no_hide_elo div.sub-ratings .rank,
 body.no_hide_elo div#modal-wrap div.ratings,
 body.no_hide_elo main#insight div.game-sample span.vstext__pl span.hide_elo,
-body.no_hide_elo main#insight div.game-sample span.vstext__op span.hide_elo
+body.no_hide_elo main#insight div.game-sample span.vstext__op span.hide_elo,
+body.no_hide_elo table.tour__standing span.rating
 {
 	visibility: visible;
 }
