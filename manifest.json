@@ -1,7 +1,7 @@
 {
   "manifest_version": 2,
   "name": "Lichess hide Elo",
-  "version": "2.3.1",
+  "version": "2.3.2",
   "description": "Hides Elo ratings on lichess.org",
   "icons": {
     "16": "icons/icon-on.svg",
