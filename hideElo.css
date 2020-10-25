@@ -6,7 +6,7 @@
 /* Tooltip over player name */
 #powerTip .upt__info__ratings,
 /* Tooltip over player name while that player is playing */
-#powerTip .mini-game__player .mini-game__user .rating,
+.mini-game__player .mini-game__user .rating,
 /* Elo change in left side box */
 div.game__meta__players .player good,
 div.game__meta__players .player bad,
@@ -90,7 +90,7 @@ body.no_hide_elo .ruser rating,
 body.no_hide_elo .ruser good,
 body.no_hide_elo .ruser bad,
 body.no_hide_elo #powerTip .upt__info__ratings,
-body.no_hide_elo #powerTip .mini-game__player .mini-game__user .rating,
+body.no_hide_elo .mini-game__player .mini-game__user .rating,
 body.no_hide_elo div.game__meta__players .player good,
 body.no_hide_elo div.game__meta__players .player bad,
 body.no_hide_elo div.game__meta__players .player a.user-link .hide_elo,
