@@ -125,6 +125,11 @@ function hideRatingsInLeftSidebox(players) {
   });
 }
 
+var boardLeft = document.querySelector('aside.round__side');
+if (boardLeft) {
+  new MutationObserver(observeLeftSideBox).observe(boardLeft, {childList: true, subtree: true });
+}
+
 // Process the player names in the left side box of the game view. NOTE: When hovering over these
 // they load a #powerTip with more ratings, which is hidden via CSS. *While* this tooltip is loading
 // it will show the text from the user-link.
