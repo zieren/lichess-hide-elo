@@ -27,6 +27,8 @@ div.games article.game-row div.versus div.player,
 /* Profile page: textual ratings */
 div.sub-ratings rating,
 div.sub-ratings .rank,
+/* Profile page: graphical ratings with user info on the right */
+div.user-show div.rating-history,
 /* Challenge: outgoing */
 div#modal-wrap div.ratings,
 /* Analysis board: PGN */
@@ -42,16 +44,14 @@ div.swiss__podium table.stats tr:nth-child(3)
 {
 	visibility: hidden;
 }
+/* Profile page: graphical ratings without user info on the right (e.g. variant) */
+div.perf-stat div.rating-history {
+  display: none;
+}
 /* Challenge: incoming */
 div#challenge-app div.challenges a.user-link name .hide_elo
 {
 	display: none;
-}
-/* Profile page: graphical ratings. This seems to be overriden by the
- * dynamically loaded charts. !important fixes that. */
-div.rating-history
-{
-	display: none !important;
 }
 
 /* Elo in seek list. Other methods don't preserve the cell background and mouse
@@ -103,6 +103,7 @@ body.no_hide_elo div.activity div.entry rating,
 body.no_hide_elo div.games article.game-row div.versus div.player,
 body.no_hide_elo div.sub-ratings rating,
 body.no_hide_elo div.sub-ratings .rank,
+body.no_hide_elo div.user-show div.rating-history,
 body.no_hide_elo div#modal-wrap div.ratings,
 body.no_hide_elo main#insight div.game-sample span.vstext__pl span.hide_elo,
 body.no_hide_elo main#insight div.game-sample span.vstext__op span.hide_elo,
@@ -111,10 +112,6 @@ body.no_hide_elo div.tour__podium table.stats tr:nth-child(1),
 body.no_hide_elo div.swiss__podium table.stats tr:nth-child(3)
 {
 	visibility: visible;
-}
-body.no_hide_elo div.rating-history
-{
-	display: block !important;
 }
 body.no_hide_elo div#challenge-app div.challenges a.user-link name .hide_elo
 {
@@ -126,7 +123,9 @@ body.no_hide_elo section.result.split
 {
 	display: flex;
 }
-
+body.no_hide_elo div.perf-stat div.rating-history {
+  display: block;
+}
 body.no_hide_elo div.lobby__app__content td.hide_elo
 {
 	font-size: 100%;
