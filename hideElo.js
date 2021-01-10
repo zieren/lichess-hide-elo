@@ -239,6 +239,36 @@ if (headerTop) {
   new MutationObserver(observeIncomingChallenge).observe(headerTop, {childList: true, subtree: true});
 }
 
+// ---------- Insights: sample games ----------
+
+function processVsText(vsText) {
+  var children = vsText.childNodes;
+  var span = document.createElement('span');
+  span.classList.add('hide_elo');
+  // Name and rating are separated by a <BR>.
+  for (var i = children.length - 1; i >= 0 && children[i].nodeName !== 'BR'; --i) {
+    span.prepend(children[i]);
+  }
+  vsText.appendChild(span);
+}
+
+function observeInsightGames(mutations) {
+  mutations.forEach(function(mutation) {
+    mutation.addedNodes.forEach(function(node) {
+      if (typeof node.querySelectorAll === 'function') {
+        var vsTexts = node.querySelectorAll('span.vstext__pl, span.vstext__op');
+        vsTexts.forEach(vsText => processVsText(vsText));
+      }
+    });
+  });
+}
+
+// Games are loaded asynchronously, so we need a MutationObserver.
+var insight = document.querySelector('main#insight');
+if (insight) {
+  new MutationObserver(observeInsightGames).observe(insight, {childList: true, subtree: true});
+}
+
 // ---------- FEN->Shredder-FEN conversion ----------
 
 function convertFenIfChess960() {
@@ -306,36 +336,6 @@ var pgnLinks = document.querySelectorAll('div.analyse__underboard__panels div.fe
 pgnLinks.forEach(function(a) {
   a.onclick = interceptPgnDownload;
 });
-
-// ---------- Insights: sample games ----------
-
-function processVsText(vsText) {
-  var children = vsText.childNodes;
-  var span = document.createElement('span');
-  span.classList.add('hide_elo');
-  // Name and rating are separated by a <BR>.
-  for (var i = children.length - 1; i >= 0 && children[i].nodeName !== 'BR'; --i) {
-    span.prepend(children[i]);
-  }
-  vsText.appendChild(span);
-}
-
-function observeInsightGames(mutations) {
-  mutations.forEach(function(mutation) {
-    mutation.addedNodes.forEach(function(node) {
-      if (typeof node.querySelectorAll === 'function') {
-        var vsTexts = node.querySelectorAll('span.vstext__pl, span.vstext__op');
-        vsTexts.forEach(vsText => processVsText(vsText));
-      }
-    });
-  });
-}
-
-// Games are loaded asynchronously, so we need a MutationObserver.
-var insight = document.querySelector('main#insight');
-if (insight) {
-  new MutationObserver(observeInsightGames).observe(insight, {childList: true, subtree: true});
-}
 
 // ---------- Toggle on/off ----------
 
