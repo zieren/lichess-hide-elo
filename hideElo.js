@@ -104,7 +104,7 @@ function hideRatingsInLeftSidebox(players) {
   players.forEach(function(player) {
     // A title like IM is a separate node.
     var titleSeparator = '';
-    if (player.firstChild.classList && player.firstChild.classList.contains('title')) {
+    if (player.firstChild.classList && player.firstChild.classList.contains('utitle')) {
       var nameNode = player.childNodes[1];
       titleSeparator = ' ';
     } else {
