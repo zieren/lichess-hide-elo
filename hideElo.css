@@ -42,8 +42,8 @@ main#insight div.game-sample span.vstext__op span.hide_elo,
 /* Tournaments: standings list */
 table.slist span.rating,
 /* Tournaments: podium */
-div.tour__podium table.stats tr:nth-child(1),
-div.swiss__podium table.stats tr:nth-child(3)
+div.tour__main div.podium table.stats tr:nth-child(1),
+div.swiss__main div.podium table.stats tr:nth-child(3)
 {
 	visibility: hidden;
 }
@@ -114,8 +114,8 @@ body.no_hide_elo div#modal-wrap div.ratings,
 body.no_hide_elo main#insight div.game-sample span.vstext__pl span.hide_elo,
 body.no_hide_elo main#insight div.game-sample span.vstext__op span.hide_elo,
 body.no_hide_elo table.slist span.rating,
-body.no_hide_elo div.tour__podium table.stats tr:nth-child(1),
-body.no_hide_elo div.swiss__podium table.stats tr:nth-child(3)
+body.no_hide_elo div.tour__main div.podium table.stats tr:nth-child(1),
+body.no_hide_elo div.swiss__main div.podium table.stats tr:nth-child(3)
 {
 	visibility: visible;
 }
