@@ -1,15 +1,17 @@
 /* Ingame box on the right: rating */
 .ruser rating,
-/* Ingame box on the right: rating change */
+/* Ingame box on the right: rating change (or +/- 0) */
 .ruser good,
 .ruser bad,
+.ruser span:last-child,
 /* Tooltip over player name */
 #powerTip .upt__info__ratings,
 /* Tooltip over player name while that player is playing */
 .mini-game__player .mini-game__user .rating,
-/* Elo change in left side box */
+/* Elo change (or +/- 0) in left side box */
 div.game__meta__players .player good,
 div.game__meta__players .player bad,
+div.game__meta__players .player a span:last-child,
 /* Ingame box on the left: rating */
 div.game__meta__players .player a.user-link,
 div.game__meta__players .player a.user-link .hide_elo,
@@ -17,9 +19,10 @@ div.game__meta__players .player a.user-link .hide_elo,
 #powerTip .user-link .hide_elo,
 #powerTip .user-link good,
 #powerTip .user-link bad,
-/* Analysis board: rating change */
+/* Analysis board: rating change (or +/- 0))*/
 div.advice-summary a.user-link good,
 div.advice-summary a.user-link bad,
+div.advice-summary a.user-link span:last-child,
 /* Profile page: Activity */
 div.activity div.entry rating,
 /* Profile page: Games */
@@ -89,16 +92,19 @@ div.analyse__underboard__panels div.fen-pgn div.pgn.elo_hidden
 body.no_hide_elo .ruser rating,
 body.no_hide_elo .ruser good,
 body.no_hide_elo .ruser bad,
+body.no_hide_elo .ruser span:last-child,
 body.no_hide_elo #powerTip .upt__info__ratings,
 body.no_hide_elo .mini-game__player .mini-game__user .rating,
 body.no_hide_elo div.game__meta__players .player good,
 body.no_hide_elo div.game__meta__players .player bad,
+body.no_hide_elo div.game__meta__players .player a span:last-child,
 body.no_hide_elo div.game__meta__players .player a.user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link .hide_elo,
 body.no_hide_elo #powerTip .user-link good,
 body.no_hide_elo #powerTip .user-link bad,
 body.no_hide_elo div.advice-summary a.user-link good,
 body.no_hide_elo div.advice-summary a.user-link bad,
+body.no_hide_elo div.advice-summary a.user-link span:last-child,
 body.no_hide_elo div.activity div.entry rating,
 body.no_hide_elo div.games article.game-row div.versus div.player,
 body.no_hide_elo div.sub-ratings rating,
