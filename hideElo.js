@@ -110,14 +110,26 @@ function hideRatingsInLeftSidebox(players) {
     } else {
       var nameNode = player.childNodes[0];
     }
-    var match = leftSideboxNameRatingRE.exec(nameNode.textContent);
+    // Name and rating can be distributed across multiple nodes (e.g. 3 for provisional ratings,
+    // with names "#text" and "ABBR"). We keep the first one for the name and add a sibling with the
+    // rating. After that may follow another node with the rating change.
+    var nameRating = nameNode.textContent;
+    var cursor = nameNode;
+    var nodesToRemove = [];
+    while ((cursor = cursor.nextSibling)
+        && (cursor.nodeName === "#text" || cursor.nodeName === "ABBR")) {
+      nameRating += cursor.textContent;
+      nodesToRemove.push(cursor);
+    }
+    const match = leftSideboxNameRatingRE.exec(nameRating);
     if (match) {
       nameNode.textContent = titleSeparator + match[1];  // Just the name.
       var rating = document.createElement('span');
-      rating.textContent = ' ' + match[2] + (nameNode.nextSibling ? ' ' : '');
+      rating.textContent = ' ' + match[2] + (cursor ? ' ' : ''); 
       rating.classList.add('hide_elo');
       // Insert before rating change if it exists (i.e. it's a rated game), or else at the end if
-      // nextSibling is null.
+      // nextSibling is null. Replace extra nodes originally used for name and rating.
+      nodesToRemove.forEach(n => player.removeChild(n));
       player.insertBefore(rating, nameNode.nextSibling);
       // Indicate that it's now safe to show the player name.
       player.classList.add('elo_hidden');
@@ -125,7 +137,7 @@ function hideRatingsInLeftSidebox(players) {
   });
 }
 
-var boardLeft = document.querySelector('aside.round__side');
+var boardLeft = document.querySelector('aside.round__side, aside.analyse__side');
 if (boardLeft) {
   new MutationObserver(observeLeftSideBox).observe(boardLeft, {childList: true, subtree: true });
 }
