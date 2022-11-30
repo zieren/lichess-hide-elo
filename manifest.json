@@ -37,7 +37,7 @@
     "page": "options.html"
   },
   "permissions": ["storage"],
-  "applications": {
+  "browser_specific_settings": {
     "gecko": {
       "id": "lichess.hide.elo@zieren.de"
     }
